@@ -6,7 +6,10 @@ from Autodesk.Revit.DB import *
 doc = __revit__.ActiveUIDocument.Document
 
 #Creating collector instance and collecting all the walls from the model
-wall_collector = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().ToElementIds()
+wall_collector = FilteredElementCollector(doc).\
+    OfCategory(BuiltInCategory.OST_Walls).\
+    WhereElementIsNotElementType().\
+    ToElementIds()
 walls_Out = []
 walls_In = []
 total_Volume_Out = 0.0

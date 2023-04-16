@@ -7,6 +7,8 @@ import System
 from System import Array
 from System.Collections.Generic import *
 
+getting_Area_Volume = getting_Area
+
 clr.AddReference('ProtoGeometry')
 from Autodesk.DesignScript.Geometry import *
 
@@ -40,7 +42,8 @@ floors_collector = FilteredElementCollector(doc). \
     ToElementIds()
 
 
-def getting_Volume(floor_list, floor_type_check):
+def getting_Area_Volume(floor_list,floor_type_check):
+    total_Area = 0.0
     total_Volume = 0.0
     for el in floor_list:
         floor_element = doc.GetElement(el)
@@ -48,45 +51,34 @@ def getting_Volume(floor_list, floor_type_check):
         floor_type_comments = floor_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
         floor_duplicationTypeMark = floor_type.LookupParameter("Duplication Type Mark").AsString()
         if floor_type_comments == "Up":
-            for type_el in floor_type_check:
-                if floor_duplicationTypeMark == type_el:
-                    floor_volume = floor_element.LookupParameter("Volume").AsDouble()
-                    total_Volume = total_Volume + floor_volume * 0.0283168466
-    return total_Volume
+            if floor_duplicationTypeMark == floor_type_check:
+                floor_volume = floor_element.LookupParameter("Volume").AsDouble()
+                floor_area = floor_element.LookupParameter("Area").AsDouble()
+                total_Volume = total_Volume + floor_volume * 0.0283168466
+                total_Area = total_Area + floor_area * 0.092903
+    if total_Area == 0.0 or total_Volume == 0.0:
+        pass
+    else:
+        return round(total_Area,2), round(total_Volume,2)
 
-
-def getting_Area(floor_list, floor_type_check):
+def getting_Area_Volume_Down(floor_list,floor_type_check):
     total_Area = 0.0
+    total_Volume = 0.0
     for el in floor_list:
         floor_element = doc.GetElement(el)
         floor_type = floor_element.FloorType
         floor_type_comments = floor_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
         floor_duplicationTypeMark = floor_type.LookupParameter("Duplication Type Mark").AsString()
-        if floor_type_comments == "Up":
-            for type_el in floor_type_check:
-                if floor_duplicationTypeMark == type_el:
-                    floor_area = floor_element.LookupParameter("Area").AsDouble()
-                    total_Area = total_Area + floor_area * 0.092903
-    return total_Area
-
-
-def check_for_zero(result, floor_type_check):
-    if result == 0:
+        if floor_type_comments == "Down":
+            if floor_duplicationTypeMark == floor_type_check:
+                floor_volume = floor_element.LookupParameter("Volume").AsDouble()
+                floor_area = floor_element.LookupParameter("Area").AsDouble()
+                total_Volume = total_Volume + floor_volume * 0.0283168466
+                total_Area = total_Area + floor_area * 0.092903
+    if total_Area == 0.0 or total_Volume == 0.0:
         pass
     else:
-        for type in floor_type_check:
-            result_of_beams_vol = 0
-            str_check = ", ".join(floor_type_check)
-            # res_of_beams = res_of_beams + result
-        if len(floor_type_check) > 1:
-            volume = 0
-            for p in floor_type_check:
-                total_v = getting_Volume(floors_collector, [p])
-                volume = volume + total_v
-            return result, volume
-        elif len(floor_type_check) == 1:
-            volume = getting_Volume(floors_collector, [type])
-            return result, volume
+        return round(total_Area,2), round(total_Volume,2)
 
 
 """________BEAMS________"""
@@ -145,17 +137,30 @@ def check_for_zero(result, beam_type_check):
 
 
 """________FLOORS________"""
-floors = {
-    "regular": check_for_zero(getting_Area(floors_collector, ["Regular", "Regular-T", "Balcon"]),
+floors_up = {
+    "regular": check_for_zero(getting_Area_Volume(floors_collector, ["Regular", "Regular-T", "Balcon"]),
                               ["Regular", "Regular-T", "Balcon"]),
-    "reg_prestressed": check_for_zero(getting_Area(floors_collector, ["Regular-P"]), ["Regular-P"]),
-    "ramp": check_for_zero(getting_Area(floors_collector, ["Rampa"]), ["Rampa"]),
-    "special": check_for_zero(getting_Area(floors_collector, ["Regular-W Special"]), ["Regular-W Special"]),
-    "koteret": check_for_zero(getting_Area(floors_collector, ["Koteret"]), ["Koteret"]),
-    "lite_beton": check_for_zero(getting_Area(floors_collector, ["Lite Beton"]), ["Lite Beton"]),
-    "geoplast": check_for_zero(getting_Area(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
-    "rib_special": check_for_zero(getting_Area(floors_collector, ["Slab-Rib Special"]), ["Slab-Rib Special"]),
-    "CLSM": check_for_zero(getting_Area(floors_collector, ["CLSM"]), ["CLSM"])
+    "reg_prestressed": check_for_zero(getting_Area_Volume(floors_collector, ["Regular-P"]), ["Regular-P"]),
+    "ramp": check_for_zero(getting_Area_Volume(floors_collector, ["Rampa"]), ["Rampa"]),
+    "special": check_for_zero(getting_Area_Volume(floors_collector, ["Regular-W Special"]), ["Regular-W Special"]),
+    "koteret": check_for_zero(getting_Area_Volume(floors_collector, ["Koteret"]), ["Koteret"]),
+    "lite_beton": check_for_zero(getting_Area_Volume(floors_collector, ["Lite Beton"]), ["Lite Beton"]),
+    "geoplast": check_for_zero(getting_Area_Volume(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
+    "rib_special": check_for_zero(getting_Area_Volume(floors_collector, ["Slab-Rib Special"]), ["Slab-Rib Special"]),
+    "CLSM": check_for_zero(getting_Area_Volume(floors_collector, ["CLSM"]), ["CLSM"])
+}
+"""____FLORS_Down_____"""
+floors_down = {
+    "regular": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Regular", "Regular-T", "Balcon"]),
+                              ["Regular", "Regular-T", "Balcon"]),
+    "reg_prestressed": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Regular-P"]), ["Regular-P"]),
+    "ramp": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Rampa"]), ["Rampa"]),
+    "special": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Regular-W Special"]), ["Regular-W Special"]),
+    "koteret": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Koteret"]), ["Koteret"]),
+    "lite_beton": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Lite Beton"]), ["Lite Beton"]),
+    "geoplast": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
+    "rib_special": check_for_zero(getting_Area_Volume_Down(floors_collector, ["Slab-Rib Special"]), ["Slab-Rib Special"]),
+    "CLSM": check_for_zero(getting_Area_Volume_Down(floors_collector, ["CLSM"]), ["CLSM"])
 }
 """________Beams________"""
 beams = {
@@ -170,6 +175,56 @@ beams = {
     "beam_anchor": check_for_zero(getting_Volume(beams_collector, ["Concrete"]), ["Concrete"]),
     "beam_precast": check_for_zero(getting_Count(beams_collector, ["Precast"]), ["Precast"]),
 }
+
+
+"""________Walls________"""
+
+wall_collector = FilteredElementCollector(doc).\
+    OfCategory(BuiltInCategory.OST_Walls).\
+    WhereElementIsNotElementType().\
+    ToElementIds()
+walls_Out = []
+walls_In = []
+for wall_t in wall_collector:
+    #geting element from wall.id
+    new_w = doc.GetElement(wall_t)
+    # going to WallType
+    wall_type = new_w.WallType
+    #getting type_comments of this wall
+    wall_type_comments = wall_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
+    if wall_type_comments == "FrOut":
+        walls_Out.append(new_w)
+    elif wall_type_comments == "FrIN":
+        walls_In.append(new_w)
+
+def getting_Volume_Area_Out(walls_list):
+    total_Area_Out = 0.0
+    total_Volume_Out = 0.0
+    for w_out in walls_Out:
+        volume_param_Out = w_out.LookupParameter("Volume")
+        area_param_Out = w_out.LookupParameter("Area")
+        total_Volume_Out = total_Volume_Out + volume_param_Out.AsDouble() * 0.0283168466
+        total_Area_Out = total_Area_Out + area_param_Out.AsDouble() * 0.092903
+    return total_Area_Out, total_Volume_Out
+
+
+def getting_Volume_Area_IN(walls_list):
+    total_Area_In = 0.0
+    total_Volume_In = 0.0
+    for w_in in walls_In:
+        volume_param_In = w_in.LookupParameter("Volume")
+        area_param_In = w_in.LookupParameter("Area")
+        total_Volume_In = total_Volume_In + volume_param_In.AsDouble() * 0.0283168466
+        total_Area_In = total_Area_In + area_param_In.AsDouble() * 0.092903
+    return total_Area_In, total_Volume_In
+
+
+
+walls = {
+    "walls_In" : getting_Volume_Area_IN(wall_collector),
+    "walls_Out" : getting_Volume_Area_Out(wall_collector)
+}
+
 
 # """________Creating_Excel_File________""" # attempt 1
 # # creating data_frama of beams from dict

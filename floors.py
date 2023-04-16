@@ -30,7 +30,7 @@ def getting_Area_Volume(floor_list,floor_type_check):
     if total_Area == 0.0 or total_Volume == 0.0:
         pass
     else:
-        print("Area/Volume of {} equal {}/{}".format(floor_type_check, total_Area, total_Volume))
+        return round(total_Area,2), round(total_Volume,2)
 
 def getting_Area_Volume_Down(floor_list,floor_type_check):
     total_Area = 0.0
@@ -49,7 +49,8 @@ def getting_Area_Volume_Down(floor_list,floor_type_check):
     if total_Area == 0.0 or total_Volume == 0.0:
         pass
     else:
-        print("Area/Volume of {} equal {}/{}".format(floor_type_check, total_Area, total_Volume))
+        return round(total_Area,2), round(total_Volume,2)
+
 
 
 
