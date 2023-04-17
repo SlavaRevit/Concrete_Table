@@ -50,22 +50,20 @@ def check_for_zero(result, beam_type_check):
         for type in beam_type_check:
             result_of_beams_vol = 0
             str_check = ", ".join(beam_type_check)
-            # res_of_beams = res_of_beams + result
         if len(beam_type_check) > 1:
-            # print("Volume of Beams is {}".format(result))
-            return round(result,1)
+            return result
         elif len(beam_type_check) == 1:
             if type == "Concrete":
                 count_anchor = getting_Count(beams_collector, [type])
-                # print("Volume/Count of Beam Anchor Concrete  is {}/{}".format(result,count_anchor))
-                return round(result,1), count_anchor
+
+                return result, count_anchor
             elif type == "Precast":
                 res = getting_Volume(beams_collector, [type])
-                # print("Volume/Count of Beam Pergoa Precast  is {}/{}".format(res, result))
-                return round(res, 1), result
+
+                return res, result
             else:
-                # print("Volume of {} is {}".format(type, result))
-                return round(result, 1)
+
+                return result
 
 
 beams = {

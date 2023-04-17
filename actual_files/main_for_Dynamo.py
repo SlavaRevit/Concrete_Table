@@ -242,7 +242,7 @@ def check_for_zero(result, beam_type_check):
 floors_up_Area = {
     "Up_Regular": check_Area_for_zero(getting_Area_up(floors_collector, ["Regular", "Regular-T", "Balcon"]),
                                       ["Regular", "Regular-T", "Balcon"]),
-    "Up_Regular-P": check_Area_for_zero(getting_Area_up(floors_collector, ["Regular-P"]), ["Regular-P"]),
+    "Up_Prestressed": check_Area_for_zero(getting_Area_up(floors_collector, ["Regular-P"]), ["Regular-P"]),
     "Up_Rampa": check_Area_for_zero(getting_Area_up(floors_collector, ["Rampa"]), ["Rampa"]),
     "Regular-W Special": check_Area_for_zero(getting_Area_up(floors_collector, ["Regular-W Special"]),
                                              ["Regular-W Special"]),
@@ -251,13 +251,15 @@ floors_up_Area = {
     "Geoplast-D": check_Area_for_zero(getting_Area_up(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
     "Slab-Rib Special": check_Area_for_zero(getting_Area_up(floors_collector, ["Slab-Rib Special"]),
                                             ["Slab-Rib Special"]),
-    "CLSM": check_Area_for_zero(getting_Area_up(floors_collector, ["CLSM"]), ["CLSM"])
+    "CLSM": check_Area_for_zero(getting_Area_up(floors_collector, ["CLSM"]), ["CLSM"]),
+    "Topping": check_Area_for_zero(getting_Area_up(floors_collector, ["Topping"]), ["Topping"]),
+    "Slab": check_Area_for_zero(getting_Area_up(floors_collector, ["Slab"]), ["Slab"]),
+    "Up_complition": check_Area_for_zero(getting_Area_up(floors_collector, ["Completion"]), ["Completion"])
 }
-
 floors_down_Area = {
     "Dn_Regular": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Regular", "Regular-T", "Balcon"]),
                                            ["Regular", "Regular-T", "Balcon"]),
-    "Dn_Regular-P": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Regular-P"]), ["Regular-P"]),
+    "Dn_Prestressed": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Regular-P"]), ["Regular-P"]),
     "Dn_Rampa": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Rampa"]), ["Rampa"]),
     "Dn_Regular-W Special": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Regular-W Special"]),
                                                      ["Regular-W Special"]),
@@ -266,12 +268,15 @@ floors_down_Area = {
     "Dn_Geoplast-D": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
     "Dn_Slab-Rib Special": check_Area_for_zero_down(getting_Area_down(floors_collector, ["Slab-Rib Special"]),
                                                     ["Slab-Rib Special"]),
-    "CLSM": check_Area_for_zero_down(getting_Area_down(floors_collector, ["CLSM"]), ["CLSM"])
+    "CLSM": check_Area_for_zero_down(getting_Area_down(floors_collector, ["CLSM"]), ["CLSM"]),
+    "Topping": check_Area_for_zero(getting_Area_up(floors_collector, ["Topping"]), ["Topping"]),
+    "Slab": check_Area_for_zero(getting_Area_up(floors_collector, ["Slab"]), ["Slab"]),
+    "Dn_complition": check_Area_for_zero(getting_Area_up(floors_collector, ["Completion"]), ["Completion"])
 }
 floors_up_Volume = {
     "Up_Regular": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Regular", "Regular-T", "Balcon"]),
                                         ["Regular", "Regular-T", "Balcon"]),
-    "Up_Regular-P": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Regular-P"]), ["Regular-P"]),
+    "Up_Prestressed": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Regular-P"]), ["Regular-P"]),
     "Up_Rampa": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Rampa"]), ["Rampa"]),
     "Regular-W Special": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Regular-W Special"]),
                                                ["Regular-W Special"]),
@@ -280,13 +285,15 @@ floors_up_Volume = {
     "Geoplast-D": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
     "Slab-Rib Special": check_Volume_for_zero(getting_Volume_up(floors_collector, ["Slab-Rib Special"]),
                                               ["Slab-Rib Special"]),
-    "CLSM": check_Volume_for_zero(getting_Volume_up(floors_collector, ["CLSM"]), ["CLSM"])
+    "CLSM": check_Volume_for_zero(getting_Volume_up(floors_collector, ["CLSM"]), ["CLSM"]),
+    "Topping": check_Area_for_zero(getting_Area_up(floors_collector, ["Topping"]), ["Topping"]),
+    "Slab": check_Area_for_zero(getting_Area_up(floors_collector, ["Slab"]), ["Slab"]),
+    "Up_complition": check_Area_for_zero(getting_Area_up(floors_collector, ["Completion"]), ["Completion"])
 }
-
 floors_down_Volume = {
     "Dn_Regular": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Regular", "Regular-T", "Balcon"]),
                                              ["Regular", "Regular-T", "Balcon"]),
-    "Dn_Regular-P": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Regular-P"]), ["Regular-P"]),
+    "Dn_Prestressed": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Regular-P"]), ["Regular-P"]),
     "Dn_Rampa": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Rampa"]), ["Rampa"]),
     "Dn_Regular-W Special": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Regular-W Special"]),
                                                        ["Regular-W Special"]),
@@ -295,8 +302,13 @@ floors_down_Volume = {
     "Dn_Geoplast-D": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Geoplast-D"]), ["Geoplast-D"]),
     "Dn_Slab-Rib Special": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["Slab-Rib Special"]),
                                                       ["Slab-Rib Special"]),
-    "CLSM": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["CLSM"]), ["CLSM"])
+    "CLSM": check_Volume_for_zero_down(getting_Volume_down(floors_collector, ["CLSM"]), ["CLSM"]),
+    "Topping": check_Area_for_zero(getting_Area_up(floors_collector, ["Topping"]), ["Topping"]),
+    "Slab": check_Area_for_zero(getting_Area_up(floors_collector, ["Slab"]), ["Slab"]),
+    "Dn_complition": check_Area_for_zero(getting_Area_up(floors_collector, ["Completion"]), ["Completion"])
 }
+
+
 
 """________Beams________"""
 beams = {

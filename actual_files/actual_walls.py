@@ -1,22 +1,25 @@
 """________Walls________"""
 
-wall_collector = FilteredElementCollector(doc).\
-    OfCategory(BuiltInCategory.OST_Walls).\
-    WhereElementIsNotElementType().\
+wall_collector = FilteredElementCollector(doc). \
+    OfCategory(BuiltInCategory.OST_Walls). \
+    WhereElementIsNotElementType(). \
     ToElementIds()
+
+
 walls_Out = []
 walls_In = []
 for wall_t in wall_collector:
-    #geting element from wall.id
+    # geting element from wall.id
     new_w = doc.GetElement(wall_t)
     # going to WallType
     wall_type = new_w.WallType
-    #getting type_comments of this wall
+    # getting type_comments of this wall
     wall_type_comments = wall_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
     if wall_type_comments == "FrOut":
         walls_Out.append(new_w)
     elif wall_type_comments == "FrIN":
         walls_In.append(new_w)
+
 
 def getting_Volume_Area_Out(walls_list):
     total_Area_Out = 0.0
@@ -40,8 +43,7 @@ def getting_Volume_Area_IN(walls_list):
     return total_Area_In, total_Volume_In
 
 
-
 walls = {
-    "walls_In" : getting_Volume_Area_IN(wall_collector),
-    "walls_Out" : getting_Volume_Area_Out(wall_collector)
+    "walls_In": getting_Volume_Area_IN(wall_collector),
+    "walls_Out": getting_Volume_Area_Out(wall_collector)
 }
