@@ -134,9 +134,3 @@ check_for_zero(getting_Area(floors_collector,["Rampa"]), ["Rampa"])
 # check_for_zero_down(getting_Area_down(floors_collector,["Geoplast-D"]), ["Geoplast-D"])
 # check_for_zero_down(getting_Area_down(floors_collector,["Slab-Rib Special"]), ["Slab-Rib Special"])
 # check_for_zero_down(getting_Area_down(floors_collector,["CLSM"]), ["CLSM"])
-
-# print("Check Total for Floors")
-# a = check_for_zero(getting_Area(floors_collector,["Regular","Regular-T","Balcon","Regular-P","Rampa","Regular-W Special","Koteret","Lite Beton","Geoplast-D","Slab-Rib Special","CLSM"]),
-#                ["Regular","Regular-T","Balcon","Regular-P","Rampa","Regular-W Special","Koteret","Lite Beton","Geoplast-D","Slab-Rib Special","CLSM"])
-# b = check_for_zero_down(getting_Area_down(floors_collector,["Regular","Regular-T","Balcon","Regular-P","Rampa","Regular-W Special","Koteret","Lite Beton","Geoplast-D","Slab-Rib Special","CLSM"]),
-#                ["Regular","Regular-T","Balcon","Regular-P","Rampa","Regular-W Special","Koteret","Lite Beton","Geoplast-D","Slab-Rib Special","CLSM"])
