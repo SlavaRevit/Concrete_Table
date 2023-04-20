@@ -34,7 +34,6 @@ def getting_Area(found_list, found_type_check):
 Dipuns = {}
 Bisus = {}
 
-
 def getting_Length(found_list):
     for el in found_list:
         if el.Category.Name == "Structural Foundations":
@@ -47,27 +46,45 @@ def getting_Length(found_list):
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
-                        if parameter:
+                        if parameter_Descr not in Dipuns:
                             parameter_value = round(parameter.AsDouble() * 0.3048)
-                            parameter_value_vol = round(parameter_vol.AsDouble() * 0.0283168466)
-                            Dipuns["{}".format(parameter_Descr)] = parameter_value , parameter_value_vol
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Dipuns[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                                                       'Count': 1}
+                        else:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Dipuns[parameter_Descr]['Length'] += parameter_value
+                            Dipuns[parameter_Descr]['Volume'] += parameter_value_vol
+                            Dipuns[parameter_Descr]['Count'] += 1
 
-                            # print("Parameter value of Dipun {} is {}m".format(el.Name,parameter_value))
 
                     elif parameter_Duplication == "Bisus":
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
-                        if parameter:
+                        if parameter_Descr not in Bisus:
                             parameter_value = round(parameter.AsDouble() * 0.3048)
-                            parameter_value_vol = round(parameter_vol.AsDouble() * 0.0283168466)
-                            # print("Parameter value of Bisus {} is {}m".format(el.Name,parameter_value))
-                            Bisus["{}".format(parameter_Descr)] = parameter_value , parameter_value_vol
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Bisus[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                                                       'Count': 1}
+                        else:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Bisus[parameter_Descr]['Length'] += parameter_value
+                            Bisus[parameter_Descr]['Volume'] += parameter_value_vol
+                            Bisus[parameter_Descr]['Count'] += 1
+
+
                 else:
                     pass
             else:
                 continue
-
+    # for key, value in Dipuns.items():
+    #     total_length = sum(length for length, volume in value)
+    #     total_volume = sum(volume for length, volume in value)
+    #     total_count = len(key)
+    #     Dipuns[key] = (total_length, total_volume, total_count)
     return Dipuns, Bisus
 
 
