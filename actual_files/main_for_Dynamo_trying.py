@@ -308,8 +308,6 @@ floors_down_Volume = {
     "Dn_complition": check_Area_for_zero(getting_Area_up(floors_collector, ["Completion"]), ["Completion"])
 }
 
-
-
 """________Beams________"""
 beams = {
     "regular_beams": check_for_zero(
@@ -372,7 +370,58 @@ walls = {
     "walls_Out": getting_Volume_Area_Out(wall_collector)
 }
 
+"""________Foundations________"""
+
+foundation_collector = FilteredElementCollector(doc). \
+    OfCategory(BuiltInCategory.OST_StructuralFoundation). \
+    WhereElementIsNotElementType(). \
+    ToElements()
+Dipuns = {}
+Bisus = {}
+
+
+def getting_Length(found_list):
+    total_Length = 0.0
+    for el in found_list:
+        if el.Category.Name == "Structural Foundations":
+            if isinstance(el, FamilyInstance):
+                el_type_id = el.GetTypeId()
+                type_elem = doc.GetElement(el_type_id)
+                if type_elem:
+                    parameter_Duplication = type_elem.LookupParameter("Duplication Type Mark").AsString()
+                    if parameter_Duplication == "Dipun":
+                        parameter = el.LookupParameter("Length")
+                        parameter_vol = el.LookupParameter("Volume")
+                        parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
+                        if parameter:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = round(parameter_vol.AsDouble() * 0.0283168466)
+                            Dipuns["{}".format(parameter_Descr)] = parameter_value, parameter_value_vol
+
+                            # print("Parameter value of Dipun {} is {}m".format(el.Name,parameter_value))
+
+                    elif parameter_Duplication == "Bisus":
+                        parameter = el.LookupParameter("Length")
+                        parameter_vol = el.LookupParameter("Volume")
+                        parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
+                        if parameter:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = round(parameter_vol.AsDouble() * 0.0283168466)
+                            # print("Parameter value of Bisus {} is {}m".format(el.Name,parameter_value))
+                            Bisus["{}".format(parameter_Descr)] = parameter_value, parameter_value_vol
+                else:
+                    pass
+            else:
+                continue
+
+    return Dipuns, Bisus
+
+
+getting_Length(foundation_collector)
+
 """________Creating_Excel_File________"""  # attempt 1
+df_found_dipuns = pd.DataFrame.from_dict(Dipuns, orient="index", columns=["Length", "Volume"])
+df_found_bisus = pd.DataFrame.from_dict(Bisus, orient="index", columns=["Length", "Volume"])
 
 # creating data_frama of beams from dict
 df_beams = pd.DataFrame.from_dict(beams, orient="index", columns=["Value"])
@@ -410,26 +459,25 @@ df_name_beams = pd.DataFrame(index=['Beams'])
 name_walls = "Walls"
 df_name_walls = pd.DataFrame(index=['Walls'])
 name_foundation = "Foundation"
-df_name_foundation = pd.DataFrame(index=['Foundation'])
-
+df_name_Dipuns = pd.DataFrame(index=['Dipuns'])
+df_name_Bisus = pd.DataFrame(index=['Bisus'])
 
 # concatenating this 2 tables
 # df = pd.concat([df_name_beams, df_beams, df_name_floors, df_floors], axis=0, sort=False)
 # df = pd.concat([df_name_beams,df_beams,df_name_floors,df_floors_up_GENERAL,df_name_floors,df_floors_area_down,df_floors_volume_down,df_name_walls,df_walls ], axis=0, sort=False)
 
 df = pd.concat(
-    [df_name_beams, df_beams_result, df_name_floors_up, df_floors_up, df_floors_down, df_name_walls, df_walls], axis=0,
+    [df_name_Dipuns, df_found_dipuns, df_name_Bisus, df_found_bisus, df_name_beams, df_beams_result, df_name_floors_up,
+     df_floors_up, df_floors_down, df_name_walls, df_walls], axis=0,
     sort=False).round(2)
 col_1_sum = df['Area'].sum()
 col_2_sum = df['Volume'].sum()
-total_row = pd.Series({"Area":col_1_sum, "Volume":col_2_sum,"Count" : ""},name="Total")
+total_row = pd.Series({"Area": col_1_sum, "Volume": col_2_sum, "Count": ""}, name="Total")
 df = df._append(total_row)
-
-
 
 df = df.fillna('')
 # changing position of columns
-df = df.reindex(columns=["Area", "Volume", "Count"])
+df = df.reindex(columns=["Area", "Volume", "Count", "Length"])
 
 writer = pd.ExcelWriter(IN[1], engine='xlsxwriter')
 df.to_excel(writer, sheet_name="Test")

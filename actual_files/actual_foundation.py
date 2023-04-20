@@ -1,11 +1,12 @@
 from Autodesk.Revit.DB import *
 import clr
+import unicodedata
 
 clr.AddReference("RevitAPI")
 clr.AddReference("System")
 from System.Collections.Generic import List
-doc = __revit__.ActiveUIDocument.Document
 
+doc = __revit__.ActiveUIDocument.Document
 
 foundation_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_StructuralFoundation). \
@@ -30,45 +31,44 @@ def getting_Area(found_list, found_type_check):
     return total_Area
 
 
-def getting_Length(found_list):
+Dipuns = {}
+Bisus = {}
 
+
+def getting_Length(found_list):
     for el in found_list:
         if el.Category.Name == "Structural Foundations":
             if isinstance(el, FamilyInstance):
                 el_type_id = el.GetTypeId()
                 type_elem = doc.GetElement(el_type_id)
-                # print(type_elem)
                 if type_elem:
                     parameter_Duplication = type_elem.LookupParameter("Duplication Type Mark").AsString()
                     if parameter_Duplication == "Dipun":
                         parameter = el.LookupParameter("Length")
+                        parameter_vol = el.LookupParameter("Volume")
+                        parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
                         if parameter:
-                            parameter_value = parameter.AsDouble() * 0.3048
-                            print("Parameter value of Dipun {} is {}m".format(el.Name,parameter_value))
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = round(parameter_vol.AsDouble() * 0.0283168466)
+                            Dipuns["{}".format(parameter_Descr)] = parameter_value , parameter_value_vol
+
+                            # print("Parameter value of Dipun {} is {}m".format(el.Name,parameter_value))
+
                     elif parameter_Duplication == "Bisus":
                         parameter = el.LookupParameter("Length")
+                        parameter_vol = el.LookupParameter("Volume")
+                        parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
                         if parameter:
-                            parameter_value = parameter.AsDouble() * 0.3048
-                            print("Parameter value of Bisus {} is {}m".format(el.Name,parameter_value))
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = round(parameter_vol.AsDouble() * 0.0283168466)
+                            # print("Parameter value of Bisus {} is {}m".format(el.Name,parameter_value))
+                            Bisus["{}".format(parameter_Descr)] = parameter_value , parameter_value_vol
                 else:
-                    print("Haven't found")
+                    pass
             else:
-                print("All other is floors")
-        # floor_type_comments = foundation_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
-        # if foundation_type:
-        #     foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
-        #     for type_el in found_type_check:
-        #         if foundation_duplicationTypeMark == type_el:
-        #             if foundation_duplicationTypeMark:
-        #                 foundation_area = foundation_element.LookupParameter("Area").AsDouble()
-        #                 total_Area = total_Area + foundation_area * 0.092903
-    return total_Area
+                continue
 
-
-
-
-
-
+    return Dipuns, Bisus
 
 
 def getting_Volume(found_list, found_type_check):
@@ -122,10 +122,6 @@ def check_Volume_for_zero(result, found_type_check):
             volume = getting_Volume(foundation_collector, [type])
             return volume
 
-def getting_Length(found_list, found_type_check):
-    for el in found_list:
-        print(el.Name)
-
 
 """________Foundation________"""
 
@@ -142,7 +138,4 @@ def getting_Length(found_list, found_type_check):
 # }
 
 #
-# getting_Length(foundation_collector,['Dipun'], ['Dipun'])
-
-
-getting_Area_v2(foundation_collector)
+a = getting_Length(foundation_collector)
