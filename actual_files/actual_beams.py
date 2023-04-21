@@ -25,7 +25,25 @@ def beams_parameters(beam_list):
         element_type = doc.GetElement(el.GetTypeId())
         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
 
-        if custom_param == "Precast":
+        if custom_param == "Beam Anchor":
+            if custom_param not in beams:
+                beams[custom_param] = {"Count": 1}
+            else:
+                beams[custom_param]['Count'] += 1
+
+        elif custom_param == "Anchor Polymer":
+            if custom_param not in beams:
+                beams[custom_param] = {"Count": 1}
+            else:
+                beams[custom_param]['Count'] += 1
+
+        elif custom_param == "Anchor Steel":
+            if custom_param not in beams:
+                beams[custom_param] = {"Count": 1}
+            else:
+                beams[custom_param]['Count'] += 1
+
+        elif custom_param == "Precast":
             if custom_param not in beams:
                 beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
                 beams[custom_param] = {"Volume": beam_volume, "Count": 1}
@@ -69,49 +87,3 @@ def beams_parameters(beam_list):
 
 beams_parameters(beams_collector)
 
-
-# def getting_Volume(beam_list, beam_type_check):
-#     total_Volume = 0.0
-#     for el in beam_list:
-#         element_type = doc.GetElement(el.GetTypeId())
-#         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
-#         """checking for alot of types"""
-#         for t in beam_type_check:
-#             if custom_param == t:
-#                 beam_volume = el.LookupParameter("Volume").AsDouble()
-#                 total_Volume = total_Volume + beam_volume * 0.0283168466
-#     return total_Volume
-#
-#
-# def getting_Count(beam_list, beam_type_check):
-#     total_count = 0
-#     for el in beam_list:
-#         element_type = doc.GetElement(el.GetTypeId())
-#         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
-#         for t in beam_type_check:
-#             if custom_param == t:
-#                 total_count = total_count + 1
-#     return total_count
-#
-#
-# def check_for_zero(result, beam_type_check):
-#     if result == 0:
-#         pass
-#     else:
-#         for type in beam_type_check:
-#             result_of_beams_vol = 0
-#             str_check = ", ".join(beam_type_check)
-#         if len(beam_type_check) > 1:
-#             return result
-#         elif len(beam_type_check) == 1:
-#             if type == "Concrete":
-#                 count_anchor = getting_Count(beams_collector, [type])
-#
-#                 return result, count_anchor
-#             elif type == "Precast":
-#                 res = getting_Volume(beams_collector, [type])
-#
-#                 return res, result
-#             else:
-#
-#                 return result

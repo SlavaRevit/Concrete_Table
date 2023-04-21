@@ -131,8 +131,28 @@ def beams_parameters(beam_list):
     for el in beam_list:
         element_type = doc.GetElement(el.GetTypeId())
         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
+        if custom_param == "Beam Steel":
+            continue
 
-        if custom_param == "Precast":
+        if custom_param == "Beam Anchor":
+            if custom_param not in beams:
+                beams[custom_param] = {"Count": 1}
+            else:
+                beams[custom_param]['Count'] += 1
+
+        elif custom_param == "Anchor Polymer":
+            if custom_param not in beams:
+                beams[custom_param] = {"Count": 1}
+            else:
+                beams[custom_param]['Count'] += 1
+
+        elif custom_param == "Anchor Steel":
+            if custom_param not in beams:
+                beams[custom_param] = {"Count": 1}
+            else:
+                beams[custom_param]['Count'] += 1
+
+        elif custom_param == "Precast":
             if custom_param not in beams:
                 beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
                 beams[custom_param] = {"Volume": beam_volume, "Count": 1}
