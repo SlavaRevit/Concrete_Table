@@ -125,67 +125,57 @@ beams_collector = FilteredElementCollector(doc). \
     WhereElementIsNotElementType(). \
     ToElements()
 
+beams = {}
 
-def getting_Volume(beam_list, beam_type_check):
-    total_Volume = 0.0
+def beams_parameters(beam_list):
     for el in beam_list:
         element_type = doc.GetElement(el.GetTypeId())
         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
-        """checking for alot of types"""
-        for t in beam_type_check:
-            if custom_param == t:
-                beam_volume = el.LookupParameter("Volume").AsDouble()
-                total_Volume = total_Volume + beam_volume * 0.0283168466
-    return total_Volume
 
-
-def getting_Count(beam_list, beam_type_check):
-    total_count = 0
-    for el in beam_list:
-        element_type = doc.GetElement(el.GetTypeId())
-        custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
-        for t in beam_type_check:
-            if custom_param == t:
-                total_count = total_count + 1
-    return total_count
-
-
-def check_for_zero(result, beam_type_check):
-    if result == 0:
-        pass
-    else:
-        for type in beam_type_check:
-            result_of_beams_vol = 0
-            str_check = ", ".join(beam_type_check)
-        if len(beam_type_check) > 1:
-            return result
-        elif len(beam_type_check) == 1:
-            if type == "Concrete":
-                count_anchor = getting_Count(beams_collector, [type])
-
-                return result, count_anchor
-            elif type == "Precast":
-                res = getting_Volume(beams_collector, [type])
-
-                return res, result
+        if custom_param == "Precast":
+            if custom_param not in beams:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[custom_param] = {"Volume": beam_volume, "Count": 1}
             else:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[custom_param]['Volume'] += beam_volume
+                beams[custom_param]['Count'] += 1
 
-                return result
+        elif custom_param == "Concrete":
+            if custom_param not in beams:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[custom_param] = {"Volume": beam_volume, "Count": 1}
+            else:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[custom_param]['Volume'] += beam_volume
+                beams[custom_param]['Count'] += 1
 
+        elif custom_param in ["Regular", "Balcon", "Transformation", "Pergola", "Belts", "Tapered"]:
+            combined_key = "Beams_new"
+            if combined_key not in beams:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[combined_key] = {"Volume": beam_volume}
+            elif combined_key in beams:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[combined_key]['Volume'] += beam_volume
+            # else:
+            #     beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+            #     beams[combined_key] = {"Volume": beam_volume}
+        elif custom_param not in beams:
+            beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+            beams[custom_param] = {"Volume": beam_volume}
+        else:
+            beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+            beams[custom_param]["Volume"] += beam_volume
 
-"""________Beams________"""
-beams = {
-    "regular_beams": check_for_zero(
-        getting_Volume(beams_collector, ["Regular", "Balcon", "Transformation", "Pergola", "Belts", "Tapered"]),
-        ["Regular", "Balcon", "Transformation", "Pergola", "Belts", "Tapered"]),
+        # else:
+        #     beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+        #     beams[custom_param]['Volume'] += beam_volume
 
-    "beam_tooth": check_for_zero(getting_Volume(beams_collector, ["Regular-T"]), ["Regular-T"]),
-    "beam_prestressed": check_for_zero(getting_Volume(beams_collector, ["Prestressed"]), ["Prestressed"]),
-    "beam_foundation": check_for_zero(getting_Volume(beams_collector, ["Foundation"]), ["Foundation"]),
-    "beam_head": check_for_zero(getting_Volume(beams_collector, ["Head"]), ["Head"]),
-    "beam_anchor": check_for_zero(getting_Volume(beams_collector, ["Concrete"]), ["Concrete"]),
-    "beam_precast": check_for_zero(getting_Count(beams_collector, ["Precast"]), ["Precast"]),
-}
+    return beams
+
+beams_parameters(beams_collector)
+
 
 """________Walls________"""
 
@@ -362,8 +352,18 @@ getting_Length_Volume_Count(foundation_collector)
 """________Creating_Excel_File________"""  # attempt 1
 df_found_dipuns = pd.DataFrame.from_dict(Dipuns, orient="index", columns=["Length", "Volume", "Count"])
 df_found_dipuns_sorted = df_found_dipuns.sort_index()
+df_found_dipuns_sorted = df_found_dipuns.copy()
+df_found_dipuns_sorted.index = pd.to_numeric(df_found_dipuns_sorted.index, errors = "coerce")
+df_found_dipuns_sorted = df_found_dipuns_sorted.sort_index().fillna(0)
 
 df_found_bisus = pd.DataFrame.from_dict(Bisus, orient="index", columns=["Length", "Volume", "Count"])
+# df_found_bisus_sorted = df_found_bisus.sort_values(by=df_found_bisus.index, axis=1)
+df_found_bisus_sorted = df_found_bisus.copy()
+df_found_bisus_sorted.index = pd.to_numeric(df_found_bisus_sorted.index, errors="coerce")
+df_found_bisus_sorted = df_found_bisus_sorted.sort_index().fillna(0)
+
+# df_found_bisus_sorted = df_found_bisus.sort_index()
+
 
 df_found_Slurry_Bisus = pd.DataFrame.from_dict(slurry_Bisus, orient="index", columns=["Area", "Volume"])
 
@@ -373,16 +373,15 @@ df_floors_up = pd.DataFrame.from_dict(floors_up, orient="index", columns=["Area"
 df_floors_down = pd.DataFrame.from_dict(floors_down, orient="index", columns=["Area", "Volume"])
 
 # creating data_frama of beams from dict
-df_beams = pd.DataFrame.from_dict(beams, orient="index", columns=["Value"])
-df_beams = df_beams.dropna()
+df_beams = pd.DataFrame.from_dict(beams, orient="index", columns=["Volume", "Count"])
+# df_beams = df_beams.dropna()
 df_walls_in = pd.DataFrame.from_dict(walls_in_new, orient="index", columns=["Area", "Volume"])
 df_walls_out = pd.DataFrame.from_dict(walls_out_new, orient="index", columns=["Area", "Volume"])
 
 # from tuples spliting result to 2 different columns, column1 = Volume, column2 = Count
-df_beams[['Column1', 'Column2']] = df_beams['Value'].apply(
-    lambda x: pd.Series([x[0], x[1]] if isinstance(x, tuple) and len(x) >= 1 else [x, None]))
-
-df_beams_result = df_beams.drop(columns=['Value']).rename(columns={'Column1': 'Volume', 'Column2': 'Count'})
+# df_beams[['Column1', 'Column2']] = df_beams['Value'].apply(
+#     lambda x: pd.Series([x[0], x[1]] if isinstance(x, tuple) and len(x) >= 1 else [x, None]))
+# df_beams_result = df_beams.drop(columns=['Value']).rename(columns={'Column1': 'Volume', 'Column2': 'Count'})
 
 
 """Inserting new nam of type_element"""
@@ -400,9 +399,12 @@ df_name_Bisus = pd.DataFrame(index=['Bisus'])
 df_name_Slurry_walls = pd.DataFrame(index=['Slurry'])
 
 df = pd.concat(
-    [df_name_Slurry_walls, df_found_Slurry_Bisus, df_found_Slurry_Dipuns, df_name_Dipuns, df_found_dipuns,
-     df_name_Bisus, df_found_bisus, df_name_beams, df_beams_result, df_name_floors_up,
-     df_floors_up, df_floors_down, df_name_walls, df_walls_in, df_walls_out], axis=0,
+    [df_name_Slurry_walls, df_found_Slurry_Bisus, df_found_Slurry_Dipuns,
+     df_name_Dipuns, df_found_dipuns_sorted,
+     df_name_Bisus, df_found_bisus_sorted,
+     df_name_beams, df_beams,
+     df_name_floors_up,df_floors_up, df_floors_down,
+     df_name_walls, df_walls_in, df_walls_out], axis=0,
     sort=False).round(2)
 col_1_sum = df['Area'].sum()
 col_2_sum = df['Volume'].sum()
