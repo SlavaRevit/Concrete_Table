@@ -14,27 +14,30 @@ foundation_collector = FilteredElementCollector(doc). \
     ToElements()
 
 
-def getting_Area(found_list, found_type_check):
-    total_Area = 0.0
-    for el in found_list:
-        foundation_element = doc.GetElement(el)
-        print(foundation_element.Name)
-        foundation_type = foundation_element.FloorType
-        # floor_type_comments = foundation_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
-        if foundation_type:
-            foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
-            for type_el in found_type_check:
-                if foundation_duplicationTypeMark == type_el:
-                    if foundation_duplicationTypeMark:
-                        foundation_area = foundation_element.LookupParameter("Area").AsDouble()
-                        total_Area = total_Area + foundation_area * 0.092903
-    return total_Area
+# def getting_Area(found_list, found_type_check):
+#     total_Area = 0.0
+#     for el in found_list:
+#         foundation_element = doc.GetElement(el)
+#         foundation_type = foundation_element.FloorType
+#         # floor_type_comments = foundation_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
+#         if foundation_type:
+#             foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
+#             for type_el in found_type_check:
+#                 if foundation_duplicationTypeMark == type_el:
+#                     if foundation_duplicationTypeMark:
+#                         foundation_area = foundation_element.LookupParameter("Area").AsDouble()
+#                         total_Area = total_Area + foundation_area * 0.092903
+#     return total_Area
 
 
 Dipuns = {}
 Bisus = {}
+Basic_Plate = {}
+Found_Head = {}
+Rafsody = {}
 
-def getting_Length(found_list):
+
+def getting_Length_Volume_Count(found_list):
     for el in found_list:
         if el.Category.Name == "Structural Foundations":
             if isinstance(el, FamilyInstance):
@@ -67,7 +70,7 @@ def getting_Length(found_list):
                             parameter_value = round(parameter.AsDouble() * 0.3048)
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Bisus[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
-                                                       'Count': 1}
+                                                      'Count': 1}
                         else:
                             parameter_value = round(parameter.AsDouble() * 0.3048)
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
@@ -75,69 +78,100 @@ def getting_Length(found_list):
                             Bisus[parameter_Descr]['Volume'] += parameter_value_vol
                             Bisus[parameter_Descr]['Count'] += 1
 
-
                 else:
                     pass
-            else:
-                continue
-    # for key, value in Dipuns.items():
-    #     total_length = sum(length for length, volume in value)
-    #     total_volume = sum(volume for length, volume in value)
-    #     total_count = len(key)
-    #     Dipuns[key] = (total_length, total_volume, total_count)
-    return Dipuns, Bisus
+            # For Floor Types ( Rafsody, Head, BasicPlate )
+            elif isinstance(el, Floor):
+                el_type_id = el.GetTypeId()
+                # foundation_element = doc.GetElement(el)
+                foundation_type = el.FloorType
+                foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
+                if foundation_duplicationTypeMark == "Rafsody":
+                    if foundation_duplicationTypeMark not in Rafsody:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Rafsody[foundation_duplicationTypeMark] = {"Area": foundation_area, "Volume": foundation_volume}
+                    else:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Rafsody[foundation_duplicationTypeMark]["Area"] += foundation_area
+                        Rafsody[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                elif foundation_duplicationTypeMark == "Basic Plate":
+                    if foundation_duplicationTypeMark not in Basic_Plate:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Basic_Plate[foundation_duplicationTypeMark] = {"Area": foundation_area,
+                                                                       "Volume": foundation_volume}
+                    else:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Basic_Plate[foundation_duplicationTypeMark]["Area"] += foundation_area
+                        Basic_Plate[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                elif foundation_duplicationTypeMark == "Head":
+                    if foundation_duplicationTypeMark not in Found_Head:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Found_Head[foundation_duplicationTypeMark] = {"Area": foundation_area,
+                                                                      "Volume": foundation_volume}
+                    else:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Found_Head[foundation_duplicationTypeMark]["Area"] += foundation_area
+                        Found_Head[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+
+    return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head
 
 
-def getting_Volume(found_list, found_type_check):
-    total_Volume = 0.0
-    for el in found_list:
-        foundation_element = doc.GetElement(el)
-        foundation_type = foundation_element.FloorType
-        # floor_type_comments = foundation_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
-        foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
-        for type_el in found_type_check:
-            if foundation_duplicationTypeMark == type_el:
-                foundation_volume = foundation_element.LookupParameter("Volume").AsDouble()
-                total_Volume = total_Volume + foundation_volume * 0.0283168466
-    return total_Volume
+# def getting_Volume(found_list, found_type_check):
+#     total_Volume = 0.0
+#     for el in found_list:
+#         foundation_element = doc.GetElement(el)
+#         foundation_type = foundation_element.FloorType
+#         # floor_type_comments = foundation_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
+#         foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
+#         for type_el in found_type_check:
+#             if foundation_duplicationTypeMark == type_el:
+#                 foundation_volume = foundation_element.LookupParameter("Volume").AsDouble()
+#                 total_Volume = total_Volume + foundation_volume * 0.0283168466
+#     return total_Volume
 
 
-def check_Area_for_zero(result, found_type_check):
-    if result == 0:
-        pass
-    else:
-        for type in found_type_check:
-            result_of_beams_vol = 0
-            str_check = ", ".join(found_type_check)
-            # res_of_beams = res_of_beams + result
-        if len(found_type_check) > 1:
-            area = 0
-            for p in found_type_check:
-                total_a = getting_Area(foundation_collector, [p])
-                area = area + total_a
-            return area
-        elif len(found_type_check) == 1:
-            area = getting_Area(foundation_collector, [type])
-            return area
-
-
-def check_Volume_for_zero(result, found_type_check):
-    if result == 0:
-        pass
-    else:
-        for type in found_type_check:
-            result_of_beams_vol = 0
-            str_check = ", ".join(found_type_check)
-            # res_of_beams = res_of_beams + result
-        if len(found_type_check) > 1:
-            volume = 0
-            for p in found_type_check:
-                total_v = getting_Volume(foundation_collector, [p])
-                volume = volume + total_v
-            return volume
-        elif len(found_type_check) == 1:
-            volume = getting_Volume(foundation_collector, [type])
-            return volume
+# def check_Area_for_zero(result, found_type_check):
+#     if result == 0:
+#         pass
+#     else:
+#         for type in found_type_check:
+#             result_of_beams_vol = 0
+#             str_check = ", ".join(found_type_check)
+#             # res_of_beams = res_of_beams + result
+#         if len(found_type_check) > 1:
+#             area = 0
+#             for p in found_type_check:
+#                 total_a = getting_Area(foundation_collector, [p])
+#                 area = area + total_a
+#             return area
+#         elif len(found_type_check) == 1:
+#             area = getting_Area(foundation_collector, [type])
+#             return area
+#
+#
+# def check_Volume_for_zero(result, found_type_check):
+#     if result == 0:
+#         pass
+#     else:
+#         for type in found_type_check:
+#             result_of_beams_vol = 0
+#             str_check = ", ".join(found_type_check)
+#             # res_of_beams = res_of_beams + result
+#         if len(found_type_check) > 1:
+#             volume = 0
+#             for p in found_type_check:
+#                 total_v = getting_Volume(foundation_collector, [p])
+#                 volume = volume + total_v
+#             return volume
+#         elif len(found_type_check) == 1:
+#             volume = getting_Volume(foundation_collector, [type])
+#             return volume
 
 
 """________Foundation________"""
@@ -155,4 +189,4 @@ def check_Volume_for_zero(result, found_type_check):
 # }
 
 #
-a = getting_Length(foundation_collector)
+getting_Length_Volume_Count(foundation_collector)

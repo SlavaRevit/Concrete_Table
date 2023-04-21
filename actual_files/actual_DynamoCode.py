@@ -44,7 +44,6 @@ floors_collector = FilteredElementCollector(doc). \
     WhereElementIsNotElementType(). \
     ToElementIds()
 
-
 floors_up = {}
 floors_down = {}
 
@@ -56,7 +55,13 @@ def getting_floors_parameters(floor_list):
         floor_type_comments = floor_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
         floor_duplicationTypeMark = floor_type.LookupParameter("Duplication Type Mark").AsString()
         if floor_type_comments == "Up":
-            if floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
+            if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
+                                             "Total Floor Area Pergola",
+                                             "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
+                                             "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
+                                             "Aggregate", "Backfilling", "Polivid"]:
+                continue
+            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new"
                 if combined_key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
@@ -80,7 +85,13 @@ def getting_floors_parameters(floor_list):
                 # combine Regular, Balcon, Regular-T keys
 
         elif floor_type_comments == "Down":
-            if floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
+            if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
+                                             "Total Floor Area Pergola",
+                                             "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
+                                             "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
+                                             "Aggregate", "Backfilling", "Polivid"]:
+                continue
+            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new_down"
                 if combined_key not in floors_down:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
@@ -104,8 +115,8 @@ def getting_floors_parameters(floor_list):
 
     return floors_up, floors_down
 
-getting_floors_parameters(floors_collector)
 
+getting_floors_parameters(floors_collector)
 
 """________BEAMS________"""
 
@@ -182,47 +193,71 @@ wall_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_Walls). \
     WhereElementIsNotElementType(). \
     ToElementIds()
-walls_Out = []
-walls_In = []
-for wall_t in wall_collector:
-    # geting element from wall.id
-    new_w = doc.GetElement(wall_t)
-    # going to WallType
-    wall_type = new_w.WallType
-    # getting type_comments of this wall
-    wall_type_comments = wall_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
-    if wall_type_comments == "FrOut":
-        walls_Out.append(new_w)
-    elif wall_type_comments == "FrIN":
-        walls_In.append(new_w)
+
+slurry_Bisus = {}
+slurry_Dipun = {}
+walls_in_new = {}
+walls_out_new = {}
 
 
-def getting_Volume_Area_Out(walls_list):
-    total_Area_Out = 0.0
-    total_Volume_Out = 0.0
-    for w_out in walls_Out:
-        volume_param_Out = w_out.LookupParameter("Volume")
-        area_param_Out = w_out.LookupParameter("Area")
-        total_Volume_Out = total_Volume_Out + volume_param_Out.AsDouble() * 0.0283168466
-        total_Area_Out = total_Area_Out + area_param_Out.AsDouble() * 0.092903
-    return total_Area_Out, total_Volume_Out
+def getting_Area_Volume_walls(walls_list):
+    for wall in wall_collector:
+        new_w = doc.GetElement(wall)
+        # going to WallType
+        wall_type = new_w.WallType
+        volume_param = new_w.LookupParameter("Volume")
+        area_param = new_w.LookupParameter("Area")
+        wall_duplicationTypeMark = wall_type.LookupParameter("Duplication Type Mark").AsString()
+        wall_type_comments = wall_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
+        """Getting Slurry Bisus walls"""
+        if wall_duplicationTypeMark == "Slurry Bisus":
+            if wall_duplicationTypeMark in slurry_Bisus:
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                slurry_Bisus[wall_duplicationTypeMark]["Area"] += wall_area
+                slurry_Bisus[wall_duplicationTypeMark]["Volume"] += wall_volume
+            elif wall_duplicationTypeMark == "Slurry Bisus":
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                slurry_Bisus[wall_duplicationTypeMark] = {"Area": wall_area, "Volume": wall_volume}
+        """Getting Slurry Dipun walls"""
+        if wall_duplicationTypeMark == "Slurry Dipun":
+            if wall_duplicationTypeMark in slurry_Dipun:
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                slurry_Dipun[wall_duplicationTypeMark]["Area"] += wall_area
+                slurry_Dipun[wall_duplicationTypeMark]["Volume"] += wall_volume
+            elif wall_duplicationTypeMark == "Slurry Dipun":
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                slurry_Dipun[wall_duplicationTypeMark] = {"Area": wall_area, "Volume": wall_volume}
+        """Getting all walls IN"""
+        if wall_type_comments == "FrIN":
+            wall_key = "Walls_In"
+            if wall_key not in walls_in_new:
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                walls_in_new[wall_key] = {"Area": wall_area, "Volume": wall_volume}
+            elif wall_key in walls_in_new:
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                walls_in_new[wall_key]["Area"] += wall_area
+                walls_in_new[wall_key]["Volume"] += wall_volume
+        """Getting all walls Out"""
+        if wall_type_comments == "FrOut":
+            wall_key = "Walls_Out"
+            if wall_key not in walls_out_new:
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                walls_out_new[wall_key] = {"Area": wall_area, "Volume": wall_volume}
+            elif wall_key in walls_out_new:
+                wall_area = area_param.AsDouble() * 0.092903
+                wall_volume = volume_param.AsDouble() * 0.0283168466
+                walls_out_new[wall_key]["Area"] += wall_area
+                walls_out_new[wall_key]["Volume"] += wall_volume
 
 
-def getting_Volume_Area_IN(walls_list):
-    total_Area_In = 0.0
-    total_Volume_In = 0.0
-    for w_in in walls_In:
-        volume_param_In = w_in.LookupParameter("Volume")
-        area_param_In = w_in.LookupParameter("Area")
-        total_Volume_In = total_Volume_In + volume_param_In.AsDouble() * 0.0283168466
-        total_Area_In = total_Area_In + area_param_In.AsDouble() * 0.092903
-    return total_Area_In, total_Volume_In
-
-
-walls = {
-    "walls_In": getting_Volume_Area_IN(wall_collector),
-    "walls_Out": getting_Volume_Area_Out(wall_collector)
-}
+getting_Area_Volume_walls(wall_collector)
 
 """________Foundations________"""
 
@@ -233,8 +268,12 @@ foundation_collector = FilteredElementCollector(doc). \
 
 Dipuns = {}
 Bisus = {}
+Basic_Plate = {}
+Found_Head = {}
+Rafsody = {}
 
-def getting_Length(found_list):
+
+def getting_Length_Volume_Count(found_list):
     for el in found_list:
         if el.Category.Name == "Structural Foundations":
             if isinstance(el, FamilyInstance):
@@ -267,7 +306,7 @@ def getting_Length(found_list):
                             parameter_value = round(parameter.AsDouble() * 0.3048)
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Bisus[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
-                                                       'Count': 1}
+                                                      'Count': 1}
                         else:
                             parameter_value = round(parameter.AsDouble() * 0.3048)
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
@@ -275,31 +314,69 @@ def getting_Length(found_list):
                             Bisus[parameter_Descr]['Volume'] += parameter_value_vol
                             Bisus[parameter_Descr]['Count'] += 1
 
-
                 else:
                     pass
-            else:
-                continue
-    # for key, value in Dipuns.items():
-    #     total_length = sum(length for length, volume in value)
-    #     total_volume = sum(volume for length, volume in value)
-    #     total_count = len(key)
-    #     Dipuns[key] = (total_length, total_volume, total_count)
-    return Dipuns, Bisus
+            # For Floor Types ( Rafsody, Head, BasicPlate )
+            elif isinstance(el, Floor):
+                el_type_id = el.GetTypeId()
+                # foundation_element = doc.GetElement(el)
+                foundation_type = el.FloorType
+                foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
+                if foundation_duplicationTypeMark == "Rafsody":
+                    if foundation_duplicationTypeMark not in Rafsody:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Rafsody[foundation_duplicationTypeMark] = {"Area": foundation_area, "Volume": foundation_volume}
+                    else:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Rafsody[foundation_duplicationTypeMark]["Area"] += foundation_area
+                        Rafsody[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                elif foundation_duplicationTypeMark == "Basic Plate":
+                    if foundation_duplicationTypeMark not in Basic_Plate:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Basic_Plate[foundation_duplicationTypeMark] = {"Area": foundation_area,
+                                                                       "Volume": foundation_volume}
+                    else:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Basic_Plate[foundation_duplicationTypeMark]["Area"] += foundation_area
+                        Basic_Plate[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                elif foundation_duplicationTypeMark == "Head":
+                    if foundation_duplicationTypeMark not in Found_Head:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Found_Head[foundation_duplicationTypeMark] = {"Area": foundation_area,
+                                                                      "Volume": foundation_volume}
+                    else:
+                        foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
+                        foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                        Found_Head[foundation_duplicationTypeMark]["Area"] += foundation_area
+                        Found_Head[foundation_duplicationTypeMark]["Volume"] += foundation_volume
 
+    return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head
 
-getting_Length(foundation_collector)
+getting_Length_Volume_Count(foundation_collector)
 
 """________Creating_Excel_File________"""  # attempt 1
-df_found_dipuns = pd.DataFrame.from_dict(Dipuns, orient="index", columns=["Length", "Volume","Count"])
-df_found_bisus = pd.DataFrame.from_dict(Bisus, orient="index", columns=["Length", "Volume","Count"])
+df_found_dipuns = pd.DataFrame.from_dict(Dipuns, orient="index", columns=["Length", "Volume", "Count"])
+df_found_dipuns_sorted = df_found_dipuns.sort_index()
+
+df_found_bisus = pd.DataFrame.from_dict(Bisus, orient="index", columns=["Length", "Volume", "Count"])
+
+df_found_Slurry_Bisus = pd.DataFrame.from_dict(slurry_Bisus, orient="index", columns=["Area", "Volume"])
+
+df_found_Slurry_Dipuns = pd.DataFrame.from_dict(slurry_Dipun, orient="index", columns=["Area", "Volume"])
+
 df_floors_up = pd.DataFrame.from_dict(floors_up, orient="index", columns=["Area", "Volume"])
 df_floors_down = pd.DataFrame.from_dict(floors_down, orient="index", columns=["Area", "Volume"])
-df_found_dipuns_sorted = df_found_dipuns.sort_index()
+
 # creating data_frama of beams from dict
 df_beams = pd.DataFrame.from_dict(beams, orient="index", columns=["Value"])
 df_beams = df_beams.dropna()
-df_walls = pd.DataFrame.from_dict(walls, orient="index", columns=["Area", "Volume"])
+df_walls_in = pd.DataFrame.from_dict(walls_in_new, orient="index", columns=["Area", "Volume"])
+df_walls_out = pd.DataFrame.from_dict(walls_out_new, orient="index", columns=["Area", "Volume"])
 
 # from tuples spliting result to 2 different columns, column1 = Volume, column2 = Count
 df_beams[['Column1', 'Column2']] = df_beams['Value'].apply(
@@ -307,22 +384,8 @@ df_beams[['Column1', 'Column2']] = df_beams['Value'].apply(
 
 df_beams_result = df_beams.drop(columns=['Value']).rename(columns={'Column1': 'Volume', 'Column2': 'Count'})
 
-# """Series for floor Area/Volume UP"""
-# floors_up_Area_filtered = {k: v for k, v in floors_up_Area.items() if v}
-# area_up_series = pd.Series(floors_up_Area_filtered, name="Area")
-# floors_up_Volume_filtered = {k: v for k, v in floors_up_Volume.items() if v}
-# volume_up_series = pd.Series(floors_up_Volume_filtered, name="Volume")
-# df_floors_up = pd.concat([area_up_series, volume_up_series], axis=1)
-#
-# """Series for floor Area/Volume DOWN"""
-# floors_up_Area_filtered = {k: v for k, v in floors_down_Area.items() if v}
-# area_down_series = pd.Series(floors_up_Area_filtered, name="Area")
-# floors_up_Volume_filtered = {k: v for k, v in floors_down_Volume.items() if v}
-# volume_down_series = pd.Series(floors_up_Volume_filtered, name="Volume")
-# df_floors_down = pd.concat([area_down_series, volume_down_series], axis=1)
 
-# Inserting new Name of Type:
-
+"""Inserting new nam of type_element"""
 name_up = "Floors"
 df_name_floors_up = pd.DataFrame(index=["Floors"])
 name_down = "Floors_Down"
@@ -334,14 +397,12 @@ df_name_walls = pd.DataFrame(index=['Walls'])
 name_foundation = "Foundation"
 df_name_Dipuns = pd.DataFrame(index=['Dipuns'])
 df_name_Bisus = pd.DataFrame(index=['Bisus'])
-
-# concatenating this 2 tables
-# df = pd.concat([df_name_beams, df_beams, df_name_floors, df_floors], axis=0, sort=False)
-# df = pd.concat([df_name_beams,df_beams,df_name_floors,df_floors_up_GENERAL,df_name_floors,df_floors_area_down,df_floors_volume_down,df_name_walls,df_walls ], axis=0, sort=False)
+df_name_Slurry_walls = pd.DataFrame(index=['Slurry'])
 
 df = pd.concat(
-    [df_name_Dipuns, df_found_dipuns_sorted, df_name_Bisus, df_found_bisus, df_name_beams, df_beams_result, df_name_floors_up,
-     df_floors_up, df_floors_down, df_name_walls, df_walls], axis=0,
+    [df_name_Slurry_walls, df_found_Slurry_Bisus, df_found_Slurry_Dipuns, df_name_Dipuns, df_found_dipuns,
+     df_name_Bisus, df_found_bisus, df_name_beams, df_beams_result, df_name_floors_up,
+     df_floors_up, df_floors_down, df_name_walls, df_walls_in, df_walls_out], axis=0,
     sort=False).round(2)
 col_1_sum = df['Area'].sum()
 col_2_sum = df['Volume'].sum()
