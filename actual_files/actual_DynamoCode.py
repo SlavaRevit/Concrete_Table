@@ -38,14 +38,158 @@ uiapp = DocumentManager.Instance.CurrentUIApplication
 app = uiapp.Application
 uidoc = uiapp.ActiveUIDocument
 
+floors_up = {}
+floors_down = {}
+columns = {}
+beams = {}
+slurry_Bisus = {}
+slurry_Dipun = {}
+walls_in_new = {}
+walls_out_new = {}
+Dipuns = {}
+Bisus = {}
+Basic_Plate = {}
+Found_Head = {}
+Rafsody = {}
+Slabedge = {}
+
+
+
+
+"""________Stairs________"""
+
+stairs_collector = FilteredElementCollector(doc). \
+    OfCategory(BuiltInCategory.OST_Stairs). \
+    WhereElementIsNotElementType(). \
+    ToElements()
+
+floors_collector_forsteirs = FilteredElementCollector(doc). \
+    OfCategory(BuiltInCategory.OST_Floors). \
+    WhereElementIsNotElementType(). \
+    ToElements()
+
+
+Stairs = {}
+def getiing_parameters_slab_edge(stairs_collector, floors_collector_forsteirs):
+    for el in stairs_collector:
+        stair_type_id = el.GetTypeId()
+        stair_type_elem = doc.GetElement(stair_type_id)
+        parameter_Duplication = stair_type_elem.LookupParameter("Duplication Type Mark").AsString()
+        if stair_type_elem:
+            if parameter_Duplication == "Home" or parameter_Duplication == "Stairway" or parameter_Duplication == "Stairs":
+                parameter_vol = el.LookupParameter("Volume")
+                key = "Stairs"
+                if key not in Stairs:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Stairs[key] = {"Volume": parameter_value_vol}
+                elif key in Stairs:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Stairs[key]["Volume"] += parameter_value_vol
+            else:
+                pass
+
+    for el in floors_collector_forsteirs:
+        floor_type_id = el.GetTypeId()
+        floor_type_elem = doc.GetElement(floor_type_id)
+        parameter_Duplication = floor_type_elem.LookupParameter("Duplication Type Mark").AsString()
+        if floor_type_elem:
+            if parameter_Duplication == "Landing-H" or parameter_Duplication == "Landing-S":
+                parameter_vol = el.LookupParameter("Volume")
+                key = "Stairs"
+                if key not in Stairs:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Stairs[key] = {"Volume": parameter_value_vol}
+                elif key in Stairs:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Stairs[key]["Volume"] += parameter_value_vol
+
+
+getiing_parameters_slab_edge(stairs_collector, floors_collector_forsteirs)
+
+
+"""________SlabEdge________"""
+slab_edge_collector = FilteredElementCollector(doc). \
+    OfCategory(BuiltInCategory.OST_EdgeSlab). \
+    WhereElementIsNotElementType(). \
+    ToElements()
+
+
+def getiing_parameters_slab_edge(slab_edge_collector):
+    for el in slab_edge_collector:
+        edge_type_id = el.GetTypeId()
+        edge_type_elem = doc.GetElement(edge_type_id)
+        parameter_Duplication = edge_type_elem.LookupParameter("Duplication Type Mark").AsString()
+        if edge_type_elem:
+            if parameter_Duplication == "Wuta":
+                parameter_vol = el.LookupParameter("Volume")
+                parameter_length = el.LookupParameter("Length")
+                if parameter_Duplication not in Slabedge:
+                    parameter_length = parameter_length.AsDouble() * 0.3048
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Slabedge[parameter_Duplication] = {"Volume": parameter_value_vol, "Length": parameter_length}
+                elif parameter_Duplication in Slabedge:
+                    parameter_length = parameter_length.AsDouble() * 0.3048
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Slabedge[parameter_Duplication]["Volume"] += parameter_value_vol
+                    Slabedge[parameter_Duplication]["Length"] += parameter_length
+            else:
+                parameter_vol = el.LookupParameter("Volume")
+                parameter_length = el.LookupParameter("Length")
+                if parameter_Duplication not in Slabedge:
+                    parameter_length = parameter_length.AsDouble() * 0.3048
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Slabedge[parameter_Duplication] = {"Volume": parameter_value_vol, "Length": parameter_length}
+                elif parameter_Duplication in Slabedge:
+                    parameter_length = parameter_length.AsDouble() * 0.3048
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Slabedge[parameter_Duplication]["Volume"] += parameter_value_vol
+                    Slabedge[parameter_Duplication]["Length"] += parameter_length
+
+
+getiing_parameters_slab_edge(slab_edge_collector)
+
+
+"""________COLUMNS________"""
+columns_collector = FilteredElementCollector(doc). \
+    OfCategory(BuiltInCategory.OST_StructuralColumns). \
+    WhereElementIsNotElementType(). \
+    ToElements()
+
+
+def getiing_parameters(columns_collector):
+    for el in columns_collector:
+        col_type_id = el.GetTypeId()
+        col_type_elem = doc.GetElement(col_type_id)
+        if col_type_elem:
+            parameter_Duplication = col_type_elem.LookupParameter("Duplication Type Mark").AsString()
+            if parameter_Duplication in ["Rec", "Round", "Eliptic"]:
+                parameter_vol = el.LookupParameter("Volume")
+                key = "Columns"
+                if key not in columns:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[key] = {"Volume": parameter_value_vol}
+                elif key in columns:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[key]["Volume"] += parameter_value_vol
+
+            elif parameter_Duplication == "Precast":
+                if parameter_Duplication not in columns:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[parameter_Duplication] = {"Volume": parameter_value_vol, "Count": 1}
+                elif parameter_Duplication in columns:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[parameter_Duplication]["Volume"] += parameter_value_vol
+                    columns[parameter_Duplication]["Count"] += 1
+            else:
+                pass
+
+
+getiing_parameters(columns_collector)
 """________FLOORS________"""
 floors_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_Floors). \
     WhereElementIsNotElementType(). \
     ToElementIds()
-
-floors_up = {}
-floors_down = {}
 
 
 def getting_floors_parameters(floor_list):
@@ -59,7 +203,7 @@ def getting_floors_parameters(floor_list):
                                              "Total Floor Area Pergola",
                                              "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
                                              "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
-                                             "Aggregate", "Backfilling", "Polivid"]:
+                                             "Landing-H", "Landing-S", "Landing Steel", "Polivid","Backfilling"]:
                 continue
             elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new"
@@ -82,14 +226,13 @@ def getting_floors_parameters(floor_list):
                 floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                 floors_up[floor_duplicationTypeMark]["Area"] += floor_area
                 floors_up[floor_duplicationTypeMark]["Volume"] += floor_volume
-                # combine Regular, Balcon, Regular-T keys
 
         elif floor_type_comments == "Down":
             if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
                                              "Total Floor Area Pergola",
                                              "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
                                              "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
-                                             "Aggregate", "Backfilling", "Polivid"]:
+                                             "Landing-H", "Landing-S", "Landing Steel", "Polivid","Backfilling"]:
                 continue
             elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new_down"
@@ -119,14 +262,10 @@ def getting_floors_parameters(floor_list):
 getting_floors_parameters(floors_collector)
 
 """________BEAMS________"""
-
 beams_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_StructuralFraming). \
     WhereElementIsNotElementType(). \
     ToElements()
-
-beams = {}
-
 def beams_parameters(beam_list):
     for el in beam_list:
         element_type = doc.GetElement(el.GetTypeId())
@@ -194,22 +333,14 @@ def beams_parameters(beam_list):
 
     return beams
 
+
 beams_parameters(beams_collector)
 
-
 """________Walls________"""
-
 wall_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_Walls). \
     WhereElementIsNotElementType(). \
     ToElementIds()
-
-slurry_Bisus = {}
-slurry_Dipun = {}
-walls_in_new = {}
-walls_out_new = {}
-
-
 def getting_Area_Volume_walls(walls_list):
     for wall in wall_collector:
         new_w = doc.GetElement(wall)
@@ -268,21 +399,11 @@ def getting_Area_Volume_walls(walls_list):
 
 
 getting_Area_Volume_walls(wall_collector)
-
 """________Foundations________"""
-
 foundation_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_StructuralFoundation). \
     WhereElementIsNotElementType(). \
     ToElements()
-
-Dipuns = {}
-Bisus = {}
-Basic_Plate = {}
-Found_Head = {}
-Rafsody = {}
-
-
 def getting_Length_Volume_Count(found_list):
     for el in found_list:
         if el.Category.Name == "Structural Foundations":
@@ -367,41 +488,37 @@ def getting_Length_Volume_Count(found_list):
 
     return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head
 
-getting_Length_Volume_Count(foundation_collector)
 
-"""________Creating_Excel_File________"""  # attempt 1
+getting_Length_Volume_Count(foundation_collector)
+"""________Creating_Excel_File________"""
 df_found_dipuns = pd.DataFrame.from_dict(Dipuns, orient="index", columns=["Length", "Volume", "Count"])
-df_found_dipuns_sorted = df_found_dipuns.sort_index()
 df_found_dipuns_sorted = df_found_dipuns.copy()
-df_found_dipuns_sorted.index = pd.to_numeric(df_found_dipuns_sorted.index, errors = "coerce")
+df_found_dipuns_sorted.index = pd.to_numeric(df_found_dipuns_sorted.index, errors="coerce")
 df_found_dipuns_sorted = df_found_dipuns_sorted.sort_index().fillna(0)
 
 df_found_bisus = pd.DataFrame.from_dict(Bisus, orient="index", columns=["Length", "Volume", "Count"])
-# df_found_bisus_sorted = df_found_bisus.sort_values(by=df_found_bisus.index, axis=1)
 df_found_bisus_sorted = df_found_bisus.copy()
 df_found_bisus_sorted.index = pd.to_numeric(df_found_bisus_sorted.index, errors="coerce")
 df_found_bisus_sorted = df_found_bisus_sorted.sort_index().fillna(0)
 
-# df_found_bisus_sorted = df_found_bisus.sort_index()
+
 
 
 df_found_Slurry_Bisus = pd.DataFrame.from_dict(slurry_Bisus, orient="index", columns=["Area", "Volume"])
-
 df_found_Slurry_Dipuns = pd.DataFrame.from_dict(slurry_Dipun, orient="index", columns=["Area", "Volume"])
 
 df_floors_up = pd.DataFrame.from_dict(floors_up, orient="index", columns=["Area", "Volume"])
 df_floors_down = pd.DataFrame.from_dict(floors_down, orient="index", columns=["Area", "Volume"])
 
-# creating data_frama of beams from dict
+
 df_beams = pd.DataFrame.from_dict(beams, orient="index", columns=["Volume", "Count"])
-# df_beams = df_beams.dropna()
+
+df_stairs = pd.DataFrame.from_dict(Stairs, orient="index", columns=["Volume"])
+
+df_columns = pd.DataFrame.from_dict(columns, orient="index", columns=["Volume", "Count"])
+
 df_walls_in = pd.DataFrame.from_dict(walls_in_new, orient="index", columns=["Area", "Volume"])
 df_walls_out = pd.DataFrame.from_dict(walls_out_new, orient="index", columns=["Area", "Volume"])
-
-# from tuples spliting result to 2 different columns, column1 = Volume, column2 = Count
-# df_beams[['Column1', 'Column2']] = df_beams['Value'].apply(
-#     lambda x: pd.Series([x[0], x[1]] if isinstance(x, tuple) and len(x) >= 1 else [x, None]))
-# df_beams_result = df_beams.drop(columns=['Value']).rename(columns={'Column1': 'Volume', 'Column2': 'Count'})
 
 
 """Inserting new nam of type_element"""
@@ -417,14 +534,19 @@ name_foundation = "Foundation"
 df_name_Dipuns = pd.DataFrame(index=['Dipuns'])
 df_name_Bisus = pd.DataFrame(index=['Bisus'])
 df_name_Slurry_walls = pd.DataFrame(index=['Slurry'])
+df_name_Columns = pd.DataFrame(index=['Columns'])
+df_name_Stairs = pd.DataFrame(index=['Stairs'])
 
 df = pd.concat(
     [df_name_Slurry_walls, df_found_Slurry_Bisus, df_found_Slurry_Dipuns,
      df_name_Dipuns, df_found_dipuns_sorted,
      df_name_Bisus, df_found_bisus_sorted,
      df_name_beams, df_beams,
-     df_name_floors_up,df_floors_up, df_floors_down,
-     df_name_walls, df_walls_in, df_walls_out], axis=0,
+     df_name_floors_up, df_floors_up, df_floors_down,
+     df_name_Columns, df_columns,
+     df_name_walls, df_walls_in, df_walls_out,
+     df_name_Stairs, df_stairs
+     ], axis=0,
     sort=False).round(2)
 col_1_sum = df['Area'].sum()
 col_2_sum = df['Volume'].sum()

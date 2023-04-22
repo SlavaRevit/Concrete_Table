@@ -24,7 +24,7 @@ def getting_floors_parameters(floor_list):
         floor_duplicationTypeMark = floor_type.LookupParameter("Duplication Type Mark").AsString()
         if floor_type_comments == "Up":
             if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial","Total Floor Area LSP","Total Floor Area Pergola",
-                "Air Double Level","Air Elevator","Air Pergola Aluminium","Air Pergola Steel","Air Pergola Wood","Air Regular","Air Stairs","Landing-H","Landing-S","Landing Steel"]:
+                "Air Double Level","Air Elevator","Air Pergola Aluminium","Air Pergola Steel","Air Pergola Wood","Air Regular","Air Stairs","Landing-H","Landing-S","Landing Steel","Polivid","Backfilling"]:
                 continue
             elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new"
@@ -50,7 +50,7 @@ def getting_floors_parameters(floor_list):
 
         elif floor_type_comments == "Down":
             if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial","Total Floor Area LSP","Total Floor Area Pergola",
-                "Air Double Level","Air Elevator","Air Pergola Aluminium","Air Pergola Steel","Air Pergola Wood","Air Regular","Air Stairs","Landing-H","Landing-S","Landing Steel"]:
+                "Air Double Level","Air Elevator","Air Pergola Aluminium","Air Pergola Steel","Air Pergola Wood","Air Regular","Air Stairs","Landing-H","Landing-S","Landing Steel","Backfilling"]:
                 continue
             elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new_down"
