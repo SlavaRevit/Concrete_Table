@@ -243,7 +243,7 @@ def getting_floors_parameters(floor_list):
                                                "Landing-H", "Landing-S", "Landing Steel", "Polivid", "Backfilling",
                                                "Aggregate"]:
                 continue
-            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
+            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T","Terasa"]:
                 combined_key = "Regular_up/תקרת בטון"
                 if combined_key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
@@ -257,7 +257,7 @@ def getting_floors_parameters(floor_list):
 
             elif floor_duplicationTypeMark == "Regular-P":
                 key = "תקרה דרוכה/Prestressed slab"
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -267,8 +267,9 @@ def getting_floors_parameters(floor_list):
                     floors_up[key]['Area'] += floor_area
                     floors_up[key]['Volume'] += floor_volume
             elif floor_duplicationTypeMark == "Regular-W Special":
+
                 key = "תקרת צלעות/Ribbed slab"
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -277,9 +278,10 @@ def getting_floors_parameters(floor_list):
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key]['Area'] += floor_area
                     floors_up[key]['Volume'] += floor_volume
+
             elif floor_duplicationTypeMark == "Koteret":
                 key = "כותרת לעיבוי נגד חדירה/Koteret"
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -291,7 +293,7 @@ def getting_floors_parameters(floor_list):
 
             elif floor_duplicationTypeMark == "Rampa":
                 key = "רמפה/Rampa"
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -303,7 +305,7 @@ def getting_floors_parameters(floor_list):
 
             elif floor_duplicationTypeMark == "Geoplast-D":
                 key = "תקרת צלעות במילוי גיאופלסט/Geoplast"
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -314,7 +316,7 @@ def getting_floors_parameters(floor_list):
                     floors_up[key]['Volume'] += floor_volume
             elif floor_duplicationTypeMark == "Slab":
                 key = 'לוח"ד/Hollow slabs'
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -325,7 +327,7 @@ def getting_floors_parameters(floor_list):
                     floors_up[key]['Volume'] += floor_volume
             elif floor_duplicationTypeMark == "Completion":
                 key = 'השלמות יציקה בין לוחדים/Complitions_up'
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -336,7 +338,7 @@ def getting_floors_parameters(floor_list):
                     floors_up[key]['Volume'] += floor_volume
             elif floor_duplicationTypeMark == "Topping":
                 key = 'יציקת טופינג/Topping'
-                if key not in floors_down:
+                if key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
                     floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
                     floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
@@ -379,7 +381,7 @@ def getting_floors_parameters(floor_list):
                                                "Aggregate"]:
                 continue
 
-            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
+            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T","Terasa"]:
                 combined_key = "Regular_dn/רצפת בטון"
                 if combined_key not in floors_down:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
@@ -797,7 +799,7 @@ def getting_Length_Volume_Count(found_list):
                         Rafsody[key]["Area"] += foundation_area
                         Rafsody[key]["Volume"] += foundation_volume
                 elif foundation_duplicationTypeMark == "Basic Plate":
-                    key = "Basi Plate/פלטות יסוד"
+                    key = "Basic Plate/פלטות יסוד"
                     if key not in Basic_Plate:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
@@ -911,7 +913,7 @@ for tuple_ in dataframe_total:
     if not df1.empty or not df2.empty:
         non_empy_total_df.append(pd.concat([df_name, df1, df2]))
 
-df = pd.concat(non_empy_total_df, axis=0, sort=False).round(2)
+df = pd.concat(non_empy_total_df, axis=0, sort=False).round(1)
 
 df_to_sum_without_foundation_volume = [df_beams["Volume"],
                                        df_floors_up["Volume"],
@@ -939,9 +941,9 @@ df_to_sum_found = [
 
 ]
 
-df_sum_volume = pd.concat(df_to_sum_without_foundation_volume).sum()
-df_sum_area = pd.concat(df_to_sum_without_foundation_area).sum()
-df_sum_volume_foundation = pd.concat(df_to_sum_found).sum()
+df_sum_volume = pd.concat(df_to_sum_without_foundation_volume).sum().round(1)
+df_sum_area = pd.concat(df_to_sum_without_foundation_area).sum().round(1)
+df_sum_volume_foundation = round(pd.concat(df_to_sum_found).sum(),1)
 # df_summed_without_foundation = pd.DataFrame({"Summed volume": [df_sum]})
 # col_1_sum = df['Area'].sum()
 # col_2_sum = df['Volume'].sum()
@@ -980,6 +982,7 @@ column_dimension = worksheet.column_dimensions[column_letter]
 column_dimension.width = 25
 
 red_fill = PatternFill(start_color='00CCCCFF', end_color='00CCCCFF', fill_type='solid')
+_fill = PatternFill(start_color='00CCCCFF', end_color='00CCCCFF', fill_type='solid')
 
 for row in worksheet.iter_rows():
     for cell in row:
@@ -987,5 +990,7 @@ for row in worksheet.iter_rows():
                           'Bisus/כלונסאות ביסוס', 'Slurry walls/קירות דש', 'Columns/עמודי בטון', 'Stairs/מדרגות',
                           'Wuta/ווטות מתחת לרצפה', 'Basic_Plate/פלטות יסוד', 'Rafsody/רפסודה']:
             cell.fill = red_fill
+        elif cell.value in ["Total foundation/בסיס כולל","Total without foundation/סך הכל ללא בסיס"]:
+            cell.fill = _fill
 
 writer._save()
