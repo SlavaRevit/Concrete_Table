@@ -63,13 +63,14 @@ def getting_Length_Volume_Count(found_list):
                             Found_without_DTM[key]['Count'] += 1
 
                     if parameter_Duplication == "Dipun":
+                        key = "כלונסאות דיפון"
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
-                        if parameter_Descr not in Dipuns:
+                        if key not in Dipuns:
                             parameter_value = round(parameter.AsDouble() * 0.3048)
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                            Dipuns[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                            Dipuns[key+parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
                                                        'Count': 1}
                         else:
                             parameter_value = round(parameter.AsDouble() * 0.3048)
@@ -80,6 +81,7 @@ def getting_Length_Volume_Count(found_list):
 
 
                     elif parameter_Duplication == "Bisus":
+                        key = "Bisus/"
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
@@ -104,37 +106,39 @@ def getting_Length_Volume_Count(found_list):
                 foundation_type = el.FloorType
                 foundation_duplicationTypeMark = foundation_type.LookupParameter("Duplication Type Mark").AsString()
                 if foundation_duplicationTypeMark == "Rafsody":
+                    key = "Rafsody/רפסודה"
                     if foundation_duplicationTypeMark not in Rafsody:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-                        Rafsody[foundation_duplicationTypeMark] = {"Area": foundation_area, "Volume": foundation_volume}
+                        Rafsody[key] = {"Area": foundation_area, "Volume": foundation_volume}
                     else:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-                        Rafsody[foundation_duplicationTypeMark]["Area"] += foundation_area
-                        Rafsody[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                        Rafsody[key]["Area"] += foundation_area
+                        Rafsody[key]["Volume"] += foundation_volume
                 elif foundation_duplicationTypeMark == "Basic Plate":
+                    key = "Basi Plate/פלטות יסוד"
                     if foundation_duplicationTypeMark not in Basic_Plate:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-                        Basic_Plate[foundation_duplicationTypeMark] = {"Area": foundation_area,
+                        Basic_Plate[key] = {"Area": foundation_area,
                                                                        "Volume": foundation_volume}
                     else:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-                        Basic_Plate[foundation_duplicationTypeMark]["Area"] += foundation_area
-                        Basic_Plate[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                        Basic_Plate[key]["Area"] += foundation_area
+                        Basic_Plate[key]["Volume"] += foundation_volume
                 elif foundation_duplicationTypeMark == "Head":
+                    key = "ראשי כלונס/Foundation Head"
                     if foundation_duplicationTypeMark not in Found_Head:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-                        Found_Head[foundation_duplicationTypeMark] = {"Area": foundation_area,
-                                                                      "Volume": foundation_volume}
+                        Found_Head[key] = {"Area": foundation_area,"Volume": foundation_volume}
                     else:
                         foundation_area = el.LookupParameter("Area").AsDouble() * 0.092903
                         foundation_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-                        Found_Head[foundation_duplicationTypeMark]["Area"] += foundation_area
-                        Found_Head[foundation_duplicationTypeMark]["Volume"] += foundation_volume
+                        Found_Head[key]["Area"] += foundation_area
+                        Found_Head[key]["Volume"] += foundation_volume
 
     return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head, Found_without_DTM
 

@@ -32,7 +32,7 @@ def getiing_parameters(columns_collector):
 
             elif parameter_Duplication in ["Rec", "Round", "Eliptic"]:
                 parameter_vol = el.LookupParameter("Volume")
-                key = "Columns"
+                key = "Columns Regular/עמודי בטון"
                 if key not in columns:
                     parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                     columns[key] = {"Volume": parameter_value_vol}
@@ -41,13 +41,14 @@ def getiing_parameters(columns_collector):
                     columns[key]["Volume"] += parameter_value_vol
 
             elif parameter_Duplication == "Precast":
+                key = "עמוד טרומי/Columns Precast"
                 if parameter_Duplication not in columns:
                     parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                    columns[parameter_Duplication] = {"Volume": parameter_value_vol, "Count": 1}
+                    columns[key] = {"Volume": parameter_value_vol, "Count": 1}
                 elif parameter_Duplication in columns:
                     parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                    columns[parameter_Duplication]["Volume"] += parameter_value_vol
-                    columns[parameter_Duplication]["Count"] += 1
+                    columns[key]["Volume"] += parameter_value_vol
+                    columns[key]["Count"] += 1
             else:
                 pass
 
