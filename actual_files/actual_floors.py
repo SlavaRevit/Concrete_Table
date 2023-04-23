@@ -23,8 +23,23 @@ def getting_floors_parameters(floor_list):
         floor_type_comments = floor_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
         floor_duplicationTypeMark = floor_type.LookupParameter("Duplication Type Mark").AsString()
         if floor_type_comments == "Up":
-            if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial","Total Floor Area LSP","Total Floor Area Pergola",
-                "Air Double Level","Air Elevator","Air Pergola Aluminium","Air Pergola Steel","Air Pergola Wood","Air Regular","Air Stairs","Landing-H","Landing-S","Landing Steel","Polivid","Backfilling"]:
+            if not floor_duplicationTypeMark:
+                key = "DTM empty Up_floors"
+                if key not in floors_up:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
+                else:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key]['Area'] += floor_area
+                    floors_up[key]['Volume'] += floor_volume
+
+            elif floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
+                                             "Total Floor Area Pergola",
+                                             "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
+                                             "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
+                                             "Landing-H", "Landing-S", "Landing Steel", "Polivid", "Backfilling"]:
                 continue
             elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new"
@@ -49,8 +64,22 @@ def getting_floors_parameters(floor_list):
                 floors_up[floor_duplicationTypeMark]["Volume"] += floor_volume
 
         elif floor_type_comments == "Down":
-            if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial","Total Floor Area LSP","Total Floor Area Pergola",
-                "Air Double Level","Air Elevator","Air Pergola Aluminium","Air Pergola Steel","Air Pergola Wood","Air Regular","Air Stairs","Landing-H","Landing-S","Landing Steel","Backfilling"]:
+            if not floor_duplicationTypeMark:
+                key = "DTM empty DN_floors"
+                if key not in floors_up:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
+                else:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key]['Area'] += floor_area
+                    floors_up[key]['Volume'] += floor_volume
+            if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
+                                             "Total Floor Area Pergola",
+                                             "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
+                                             "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
+                                             "Landing-H", "Landing-S", "Landing Steel", "Polivid", "Backfilling"]:
                 continue
             elif floor_duplicationTypeMark in ["Regular", "Balcon", "Regular-T"]:
                 combined_key = "Regular_new_down"

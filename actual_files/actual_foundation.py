@@ -35,7 +35,7 @@ Bisus = {}
 Basic_Plate = {}
 Found_Head = {}
 Rafsody = {}
-
+Found_without_DTM = {}
 
 def getting_Length_Volume_Count(found_list):
     for el in found_list:
@@ -45,6 +45,23 @@ def getting_Length_Volume_Count(found_list):
                 type_elem = doc.GetElement(el_type_id)
                 if type_elem:
                     parameter_Duplication = type_elem.LookupParameter("Duplication Type Mark").AsString()
+                    if not parameter_Duplication:
+                        parameter = el.LookupParameter("Length")
+                        parameter_vol = el.LookupParameter("Volume")
+                        parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
+                        key = "DTM empty Foundation"
+                        if key not in Dipuns:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Found_without_DTM[key] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                                                       'Count': 1}
+                        else:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Found_without_DTM[key]['Length'] += parameter_value
+                            Found_without_DTM[key]['Volume'] += parameter_value_vol
+                            Found_without_DTM[key]['Count'] += 1
+
                     if parameter_Duplication == "Dipun":
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
@@ -119,7 +136,7 @@ def getting_Length_Volume_Count(found_list):
                         Found_Head[foundation_duplicationTypeMark]["Area"] += foundation_area
                         Found_Head[foundation_duplicationTypeMark]["Volume"] += foundation_volume
 
-    return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head
+    return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head, Found_without_DTM
 
 
 # def getting_Volume(found_list, found_type_check):

@@ -3,7 +3,7 @@ import os
 import clr
 import sys
 import pandas as pd
-import xlsxwriter
+
 from openpyxl import  load_workbook
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Color
@@ -57,7 +57,7 @@ Basic_Plate = {}
 Found_Head = {}
 Rafsody = {}
 Slabedge = {}
-
+Found_without_DTM = {}
 """________Stairs________"""
 
 stairs_collector = FilteredElementCollector(doc). \
@@ -122,7 +122,20 @@ def getiing_parameters_slab_edge(slab_edge_collector):
         edge_type_elem = doc.GetElement(edge_type_id)
         parameter_Duplication = edge_type_elem.LookupParameter("Duplication Type Mark").AsString()
         if edge_type_elem:
-            if parameter_Duplication == "Wuta":
+            if not parameter_Duplication:
+                parameter_vol = el.LookupParameter("Volume")
+                parameter_length = el.LookupParameter("Length")
+                key_slab_edge = "no DTM Slab edge"
+                if key_slab_edge not in Slabedge:
+                    parameter_length = parameter_length.AsDouble() * 0.3048
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Slabedge[key_slab_edge] = {"Volume": parameter_value_vol, "Length": parameter_length}
+                elif key_slab_edge in Slabedge:
+                    parameter_length = parameter_length.AsDouble() * 0.3048
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    Slabedge[key_slab_edge]["Volume"] += parameter_value_vol
+                    Slabedge[key_slab_edge]["Length"] += parameter_length
+            elif parameter_Duplication == "Wuta":
                 parameter_vol = el.LookupParameter("Volume")
                 parameter_length = el.LookupParameter("Length")
                 if parameter_Duplication not in Slabedge:
@@ -163,7 +176,18 @@ def getiing_parameters(columns_collector):
         col_type_elem = doc.GetElement(col_type_id)
         if col_type_elem:
             parameter_Duplication = col_type_elem.LookupParameter("Duplication Type Mark").AsString()
-            if parameter_Duplication in ["Rec", "Round", "Eliptic"]:
+            if not parameter_Duplication:
+                key = "DTM empty Columns"
+                if key not in columns:
+                    parameter_vol = el.LookupParameter("Volume")
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[key] = {"Volume": parameter_value_vol}
+                else:
+                    parameter_vol = el.LookupParameter("Volume")
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[key]["Volume"] += parameter_value_vol
+
+            elif parameter_Duplication in ["Rec", "Round", "Eliptic"]:
                 parameter_vol = el.LookupParameter("Volume")
                 key = "Columns"
                 if key not in columns:
@@ -200,7 +224,19 @@ def getting_floors_parameters(floor_list):
         floor_type_comments = floor_type.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS).AsString()
         floor_duplicationTypeMark = floor_type.LookupParameter("Duplication Type Mark").AsString()
         if floor_type_comments == "Up":
-            if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
+            if not floor_duplicationTypeMark:
+                key = "DTM empty Up_floors"
+                if key not in floors_up:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
+                else:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key]['Area'] += floor_area
+                    floors_up[key]['Volume'] += floor_volume
+
+            elif floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
                                              "Total Floor Area Pergola",
                                              "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
                                              "Air Pergola Steel", "Air Pergola Wood", "Air Regular", "Air Stairs",
@@ -229,6 +265,17 @@ def getting_floors_parameters(floor_list):
                 floors_up[floor_duplicationTypeMark]["Volume"] += floor_volume
 
         elif floor_type_comments == "Down":
+            if not floor_duplicationTypeMark:
+                key = "DTM empty DN_floors"
+                if key not in floors_up:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key] = {"Area": floor_area, "Volume": floor_volume}
+                else:
+                    floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
+                    floor_volume = floor_element.LookupParameter("Volume").AsDouble() * 0.0283168466
+                    floors_up[key]['Area'] += floor_area
+                    floors_up[key]['Volume'] += floor_volume
             if floor_duplicationTypeMark in ["Total Floor Area", "Total Floor Area Commercial", "Total Floor Area LSP",
                                              "Total Floor Area Pergola",
                                              "Air Double Level", "Air Elevator", "Air Pergola Aluminium",
@@ -273,10 +320,15 @@ def beams_parameters(beam_list):
     for el in beam_list:
         element_type = doc.GetElement(el.GetTypeId())
         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
-        if custom_param == "Beam Steel":
-            continue
+        # if custom_param == "Beam Steel":
+        #     if custom_param not in beams:
+        #         beams[custom_param] = {"Count": 1}
+        #     else:
+        #         beams[custom_param]['Count'] += 1
 
-        if custom_param == "Beam Anchor":
+        if custom_param == "Beam Steel":
+            pass
+        elif custom_param == "Beam Anchor":
             if custom_param not in beams:
                 beams[custom_param] = {"Count": 1}
             else:
@@ -323,19 +375,29 @@ def beams_parameters(beam_list):
             # else:
             #     beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
             #     beams[combined_key] = {"Volume": beam_volume}
-        elif custom_param not in beams:
-            beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-            beams[custom_param] = {"Volume": beam_volume}
-        else:
-            beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-            beams[custom_param]["Volume"] += beam_volume
+        elif not custom_param:
+            key = "Without Duplication Type Mark"
+            if key not in beams:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[key] = {"Volume":beam_volume}
+            else:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[key]["Volume"] += beam_volume
 
-        # else:
-        #     beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
-        #     beams[custom_param]['Volume'] += beam_volume
+        elif custom_param not in beams:
+            beam_volume = el.LookupParameter("Volume").AsDouble()
+            if beam_volume:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[custom_param] = {"Volume":beam_volume}
+        else:
+            try:
+                beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
+                beams[custom_param]["Volume"] += beam_volume
+                # beams[custom_param]["Count"] += 1
+            except:
+                pass
 
     return beams
-
 
 beams_parameters(beams_collector)
 
@@ -419,6 +481,23 @@ def getting_Length_Volume_Count(found_list):
                 type_elem = doc.GetElement(el_type_id)
                 if type_elem:
                     parameter_Duplication = type_elem.LookupParameter("Duplication Type Mark").AsString()
+                    if not parameter_Duplication:
+                        parameter = el.LookupParameter("Length")
+                        parameter_vol = el.LookupParameter("Volume")
+                        parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
+                        key = "DTM empty Foundation"
+                        if key not in Dipuns:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Found_without_DTM[key] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                                                       'Count': 1}
+                        else:
+                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                            Found_without_DTM[key]['Length'] += parameter_value
+                            Found_without_DTM[key]['Volume'] += parameter_value_vol
+                            Found_without_DTM[key]['Count'] += 1
+
                     if parameter_Duplication == "Dipun":
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
@@ -493,7 +572,7 @@ def getting_Length_Volume_Count(found_list):
                         Found_Head[foundation_duplicationTypeMark]["Area"] += foundation_area
                         Found_Head[foundation_duplicationTypeMark]["Volume"] += foundation_volume
 
-    return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head
+    return Dipuns, Bisus, Rafsody, Basic_Plate, Found_Head, Found_without_DTM
 
 
 getting_Length_Volume_Count(foundation_collector)
@@ -507,6 +586,8 @@ df_found_bisus = pd.DataFrame.from_dict(Bisus, orient="index", columns=["Length"
 df_found_bisus_sorted = df_found_bisus.copy()
 df_found_bisus_sorted.index = pd.to_numeric(df_found_bisus_sorted.index, errors="coerce")
 df_found_bisus_sorted = df_found_bisus_sorted.sort_index().fillna(0)
+
+df_found_without_DTM= pd.DataFrame.from_dict(Found_without_DTM, orient="index", columns=["Length", "Volume", "Count"])
 
 df_found_Slurry_Bisus = pd.DataFrame.from_dict(slurry_Bisus, orient="index", columns=["Area", "Volume"])
 df_found_Slurry_Dipuns = pd.DataFrame.from_dict(slurry_Dipun, orient="index", columns=["Area", "Volume"])
@@ -559,7 +640,7 @@ dataframe_total = [(df_name_Slurry_walls, df_found_Slurry_Bisus, df_found_Slurry
                    (df_name_Bisus, df_found_bisus_sorted),
                    (df_name_Rafsody, df_Rafsody),
                    (df_name_BasicPlate, df_Basic_Plate),
-                   (df_name_Found_Head, df_Found_Head),
+                   (df_name_Found_Head, df_Found_Head,df_found_without_DTM),
                    (df_name_beams, df_beams),
                    (df_name_floors_up, df_floors_up, df_floors_down),
                    (df_name_Columns, df_columns),
@@ -631,7 +712,7 @@ df.to_excel(writer, sheet_name="Test", index=True)
 
 workbook = writer.book
 worksheet = writer.sheets['Test']
-column_index = 1  # column A
+column_index = 1  # column A`
 
 for col_num, column_title in enumerate(df.columns, 1):
     cell = worksheet.cell(row=1, column=col_num+1)

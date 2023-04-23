@@ -21,7 +21,16 @@ def getiing_parameters(columns_collector):
         col_type_elem = doc.GetElement(col_type_id)
         if col_type_elem:
             parameter_Duplication = col_type_elem.LookupParameter("Duplication Type Mark").AsString()
-            if parameter_Duplication in ["Rec", "Round", "Eliptic"]:
+            if not parameter_Duplication:
+                key = "DTM empty Columns"
+                if key not in columns:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[key] = {"Volume": parameter_value_vol}
+                else:
+                    parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
+                    columns[key]["Volume"] += parameter_value_vol
+
+            elif parameter_Duplication in ["Rec", "Round", "Eliptic"]:
                 parameter_vol = el.LookupParameter("Volume")
                 key = "Columns"
                 if key not in columns:
