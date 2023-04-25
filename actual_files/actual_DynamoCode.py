@@ -707,7 +707,7 @@ def getting_Area_Volume_walls(walls_list):
                 slurry_Dipun[key] = {"Area": wall_area, "Volume": wall_volume}
 
         if wall_duplicationTypeMark == "Demolished":
-            key = "Demilished/נהרס"
+            key = "Demolished/נהרס"
             if key not in walls_in_new:
                 wall_area = area_param.AsDouble() * 0.092903
                 wall_volume = volume_param.AsDouble() * 0.0283168466
@@ -744,6 +744,33 @@ def getting_Area_Volume_walls(walls_list):
                     walls_in_new[wall_key]["Volume"] += wall_volume
 
         if wall_duplicationTypeMark == "Concrete":
+            if wall_type_comments == "FrOut":
+                wall_key = "קירות חוץ מבטון/Walls-Out"
+                if wall_key not in walls_out_new:
+                    wall_area = area_param.AsDouble() * 0.092903
+                    wall_volume = volume_param.AsDouble() * 0.0283168466
+                    walls_out_new[wall_key] = {"Area": wall_area, "Volume": wall_volume}
+                elif wall_key in walls_out_new:
+                    wall_area = area_param.AsDouble() * 0.092903
+                    wall_volume = volume_param.AsDouble() * 0.0283168466
+                    walls_out_new[wall_key]["Area"] += wall_area
+                    walls_out_new[wall_key]["Volume"] += wall_volume
+
+        if wall_duplicationTypeMark in ["Concrete-P", "Concrete-WR"]:
+            if wall_type_comments == "FrIN":
+                wall_key = "קירות פנימיים מבטון/Walls-In"
+                if wall_key not in walls_out_new:
+                    wall_area = area_param.AsDouble() * 0.092903
+                    wall_volume = volume_param.AsDouble() * 0.0283168466
+                    walls_out_new[wall_key] = {"Area": wall_area, "Volume": wall_volume}
+                elif wall_key in walls_out_new:
+                    wall_area = area_param.AsDouble() * 0.092903
+                    wall_volume = volume_param.AsDouble() * 0.0283168466
+                    walls_out_new[wall_key]["Area"] += wall_area
+                    walls_out_new[wall_key]["Volume"] += wall_volume
+
+
+        if wall_duplicationTypeMark in ["Concrete-P", "Concrete-WR"]:
             if wall_type_comments == "FrOut":
                 wall_key = "קירות חוץ מבטון/Walls-Out"
                 if wall_key not in walls_out_new:
