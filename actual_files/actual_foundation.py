@@ -51,12 +51,12 @@ def getting_Length_Volume_Count(found_list):
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
                         key = "DTM empty Foundation"
                         if key not in Dipuns:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Found_without_DTM[key] = {'Length': parameter_value, 'Volume': parameter_value_vol,
                                                       'Count': 1}
                         else:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Found_without_DTM[key]['Length'] += parameter_value
                             Found_without_DTM[key]['Volume'] += parameter_value_vol
@@ -67,12 +67,12 @@ def getting_Length_Volume_Count(found_list):
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
                         if parameter_Descr not in Dipuns:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Dipuns[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
                                                        'Count': 1}
                         else:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Dipuns[parameter_Descr]['Length'] += parameter_value
                             Dipuns[parameter_Descr]['Volume'] += parameter_value_vol
@@ -85,19 +85,17 @@ def getting_Length_Volume_Count(found_list):
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
 
                         if parameter_Descr not in Bisus:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Bisus[parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
                                                       'Count': 1}
                         else:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Bisus[parameter_Descr]['Length'] += parameter_value
                             Bisus[parameter_Descr]['Volume'] += parameter_value_vol
                             Bisus[parameter_Descr]['Count'] += 1
 
-                else:
-                    pass
             # For Floor Types ( Rafsody, Head, BasicPlate )
             elif isinstance(el, Floor):
                 el_type_id = el.GetTypeId()
@@ -212,5 +210,4 @@ getting_Length_Volume_Count(foundation_collector)
 #     "Foundation Head" : check_Volume_for_zero(getting_Volume(foundation_collector, ["Head"]),["Head"])
 # }
 
-#
-getting_Length_Volume_Count(foundation_collector)
+

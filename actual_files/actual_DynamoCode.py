@@ -6,7 +6,7 @@ import pandas as pd
 
 from openpyxl import load_workbook
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment, Color
+from openpyxl.styles import Font, PatternFill, Alignment, Color, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.utils import get_column_letter
 
@@ -100,7 +100,7 @@ def getiing_parameters_slab_edge(stairs_collector, floors_collector_forsteirs):
                     Stairs[key]["Volume"] += parameter_value_vol
             else:
                 pass
-
+# region important
     for el in floors_collector_forsteirs:
         floor_type_id = el.GetTypeId()
         floor_type_elem = doc.GetElement(floor_type_id)
@@ -134,6 +134,7 @@ slab_edge_collector = FilteredElementCollector(doc). \
     WhereElementIsNotElementType(). \
     ToElements()
 
+# endregion
 def getiing_parameters_slab_edge(slab_edge_collector):
     for el in slab_edge_collector:
         edge_type_id = el.GetTypeId()
@@ -203,6 +204,7 @@ columns_collector = FilteredElementCollector(doc). \
     WhereElementIsNotElementType(). \
     ToElements()
 
+
 def getiing_parameters(columns_collector):
     for el in columns_collector:
         col_type_id = el.GetTypeId()
@@ -210,7 +212,7 @@ def getiing_parameters(columns_collector):
         if col_type_elem:
             parameter_Duplication = col_type_elem.LookupParameter("Duplication Type Mark").AsString()
             if parameter_Duplication == "Steel":
-                continue
+                pass
 
             if parameter_Duplication in ["Rec", "Round", "Eliptic"]:
                 parameter_vol = el.LookupParameter("Volume")
@@ -244,8 +246,8 @@ def getiing_parameters(columns_collector):
                     columns[key]["Volume"] += parameter_value_vol
 
 
-
 getiing_parameters(columns_collector)
+
 """________FLOORS________"""
 floors_collector = FilteredElementCollector(doc). \
     OfCategory(BuiltInCategory.OST_Floors). \
@@ -280,7 +282,7 @@ def getting_floors_parameters(floor_list):
                                                "Landing-H", "Landing-S", "Landing Steel", "Polivid", "Backfilling",
                                                "Aggregate"]:
                 continue
-            elif floor_duplicationTypeMark in ["Regular", "Balcon","Terasa"]:
+            elif floor_duplicationTypeMark in ["Regular", "Balcon", "Terasa"]:
                 combined_key = "Regular_up/תקרת בטון"
                 if combined_key not in floors_up:
                     floor_area = floor_element.LookupParameter("Area").AsDouble() * 0.092903
@@ -556,13 +558,17 @@ def beams_parameters(beam_list):
         custom_param = element_type.LookupParameter("Duplication Type Mark").AsString()
 
         if custom_param == "Beam Steel":
-            pass
+            continue
+
         elif custom_param == "Beam Anchor":
             key = "Beam Anchor/קורת עוגנים"
             if key not in beams:
                 beams[key] = {"Count": 1}
             else:
                 beams[key]['Count'] += 1
+
+        if custom_param == "Steel Pergola":
+            pass
 
         elif custom_param == "Anchor Polymer":
             key = "עוגנים פולימרים/Anchor Polymer"
@@ -577,6 +583,7 @@ def beams_parameters(beam_list):
                 beams[key] = {"Count": 1}
             else:
                 beams[key]['Count'] += 1
+
 
         elif custom_param == "Precast":
             key = "קורה טרומית/Precast"
@@ -625,7 +632,7 @@ def beams_parameters(beam_list):
                 beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
                 beams[key]['Volume'] += beam_volume
 
-        elif custom_param in ["Regular", "Balcon", "Transformation", "Pergola", "Belts", "Tapered","Regular-T"]:
+        elif custom_param in ["Regular", "Balcon", "Transformation", "Pergola", "Belts", "Tapered", "Regular-T"]:
             combined_key = "קורות בטון/Regular beams"
             if combined_key not in beams:
                 beam_volume = el.LookupParameter("Volume").AsDouble() * 0.0283168466
@@ -676,7 +683,10 @@ def getting_Area_Volume_walls(walls_list):
     for wall in wall_collector:
         new_w = doc.GetElement(wall)
         # going to WallType
-        wall_type = new_w.WallType
+        try:
+            wall_type = new_w.WallType
+        except:
+            pass
         volume_param = new_w.LookupParameter("Volume")
         area_param = new_w.LookupParameter("Area")
         wall_duplicationTypeMark = wall_type.LookupParameter("Duplication Type Mark").AsString()
@@ -730,7 +740,7 @@ def getting_Area_Volume_walls(walls_list):
                 walls_in_new[key]["Area"] += wall_area
                 walls_in_new[key]["Volume"] += wall_volume
 
-        if wall_duplicationTypeMark == "Concrete":
+        if wall_duplicationTypeMark in ["Concrete", "Concrete-WR", "Concrete-P"]:
             if wall_type_comments == "FrIN":
                 wall_key = "קירות פנימיים מבטון/Walls-In"
                 if wall_key not in walls_in_new:
@@ -743,34 +753,7 @@ def getting_Area_Volume_walls(walls_list):
                     walls_in_new[wall_key]["Area"] += wall_area
                     walls_in_new[wall_key]["Volume"] += wall_volume
 
-        if wall_duplicationTypeMark == "Concrete":
-            if wall_type_comments == "FrOut":
-                wall_key = "קירות חוץ מבטון/Walls-Out"
-                if wall_key not in walls_out_new:
-                    wall_area = area_param.AsDouble() * 0.092903
-                    wall_volume = volume_param.AsDouble() * 0.0283168466
-                    walls_out_new[wall_key] = {"Area": wall_area, "Volume": wall_volume}
-                elif wall_key in walls_out_new:
-                    wall_area = area_param.AsDouble() * 0.092903
-                    wall_volume = volume_param.AsDouble() * 0.0283168466
-                    walls_out_new[wall_key]["Area"] += wall_area
-                    walls_out_new[wall_key]["Volume"] += wall_volume
-
-        if wall_duplicationTypeMark in ["Concrete-P", "Concrete-WR"]:
-            if wall_type_comments == "FrIN":
-                wall_key = "קירות פנימיים מבטון/Walls-In"
-                if wall_key not in walls_out_new:
-                    wall_area = area_param.AsDouble() * 0.092903
-                    wall_volume = volume_param.AsDouble() * 0.0283168466
-                    walls_out_new[wall_key] = {"Area": wall_area, "Volume": wall_volume}
-                elif wall_key in walls_out_new:
-                    wall_area = area_param.AsDouble() * 0.092903
-                    wall_volume = volume_param.AsDouble() * 0.0283168466
-                    walls_out_new[wall_key]["Area"] += wall_area
-                    walls_out_new[wall_key]["Volume"] += wall_volume
-
-
-        if wall_duplicationTypeMark in ["Concrete-P", "Concrete-WR"]:
+        if wall_duplicationTypeMark in ["Concrete", "Concrete-WR", "Concrete-P"]:
             if wall_type_comments == "FrOut":
                 wall_key = "קירות חוץ מבטון/Walls-Out"
                 if wall_key not in walls_out_new:
@@ -797,7 +780,6 @@ def getting_Area_Volume_walls(walls_list):
                     precast_elements[wall_key]["Volume"] += wall_volume
 
 
-
 getting_Area_Volume_walls(wall_collector)
 
 """________Foundations________"""
@@ -821,12 +803,12 @@ def getting_Length_Volume_Count(found_list):
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
                         key = "DTM empty Foundation"
                         if key not in Dipuns:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Found_without_DTM[key] = {'Length': parameter_value, 'Volume': parameter_value_vol,
                                                       'Count': 1}
                         else:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
                             Found_without_DTM[key]['Length'] += parameter_value
                             Found_without_DTM[key]['Volume'] += parameter_value_vol
@@ -837,17 +819,17 @@ def getting_Length_Volume_Count(found_list):
                         parameter = el.LookupParameter("Length")
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
-                        if key+parameter_Descr not in Dipuns:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                        if key + parameter_Descr not in Dipuns:
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                            Dipuns[key+parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
-                                                       'Count': 1}
+                            Dipuns[key + parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                                                             'Count': 1}
                         else:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                            Dipuns[key+parameter_Descr]['Length'] += parameter_value
-                            Dipuns[key+parameter_Descr]['Volume'] += parameter_value_vol
-                            Dipuns[key+parameter_Descr]['Count'] += 1
+                            Dipuns[key + parameter_Descr]['Length'] += parameter_value
+                            Dipuns[key + parameter_Descr]['Volume'] += parameter_value_vol
+                            Dipuns[key + parameter_Descr]['Count'] += 1
 
 
                     elif parameter_Duplication == "Bisus":
@@ -856,17 +838,17 @@ def getting_Length_Volume_Count(found_list):
                         parameter_vol = el.LookupParameter("Volume")
                         parameter_Descr = type_elem.LookupParameter("Description").AsValueString()
 
-                        if key+parameter_Descr not in Bisus:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                        if key + parameter_Descr not in Bisus:
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                            Bisus[key+parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
-                                                      'Count': 1}
+                            Bisus[key + parameter_Descr] = {'Length': parameter_value, 'Volume': parameter_value_vol,
+                                                            'Count': 1}
                         else:
-                            parameter_value = round(parameter.AsDouble() * 0.3048)
+                            parameter_value = parameter.AsDouble() * 0.3048
                             parameter_value_vol = parameter_vol.AsDouble() * 0.0283168466
-                            Bisus[key+parameter_Descr]['Length'] += parameter_value
-                            Bisus[key+parameter_Descr]['Volume'] += parameter_value_vol
-                            Bisus[key+parameter_Descr]['Count'] += 1
+                            Bisus[key + parameter_Descr]['Length'] += parameter_value
+                            Bisus[key + parameter_Descr]['Volume'] += parameter_value_vol
+                            Bisus[key + parameter_Descr]['Count'] += 1
 
                 else:
                     pass
@@ -980,17 +962,7 @@ df_name_Rafsody = pd.DataFrame(index=['Rafsody/רפסודה'])
 # df_name_Found_Head = pd.DataFrame(index=['Foundation Head/קורות קשר'])
 df_name_FOUNDATIONS = pd.DataFrame(index=['Foundations/יסודות'])
 
-# dataframe_total = [(df_name_FOUNDATIONS, df_found_Slurry_Bisus, df_found_Slurry_Dipuns),
-#                    (df_name_Dipuns, df_found_dipuns_sorted),
-#                    (df_name_Bisus, df_found_bisus_sorted),
-#                    (df_Rafsody, df_Basic_Plate,df_Found_Head,df_found_without_DTM),
-#                    (df_name_Slabedge, df_edges),
-#                    (df_name_beams, df_beams),
-#                    (df_name_floors_up, df_floors_up, df_floors_down),
-#                    (df_name_Columns, df_columns),
-#                    (df_name_walls, df_walls_in, df_walls_out),
-#                    (df_name_Stairs, df_stairs),
-#                    ]
+
 dataframe_total = [
     (df_name_FOUNDATIONS, df_found_Slurry_Bisus, df_found_Slurry_Dipuns, df_found_dipuns_sorted,
      df_found_bisus_sorted, df_Rafsody, df_Basic_Plate, df_Found_Head, df_found_without_DTM, df_edges),
@@ -1000,7 +972,7 @@ dataframe_total = [
     (df_name_Columns, df_columns),
     (df_name_walls, df_walls_in, df_walls_out),
     (df_name_Stairs, df_stairs),
-    ]
+]
 non_empy_total_df = []
 
 for tuple_ in dataframe_total:
@@ -1049,33 +1021,41 @@ df_to_sum_found = [
 df_sum_volume = pd.concat(df_to_sum_without_foundation_volume).sum().round(1)
 df_sum_area = pd.concat(df_to_sum_without_foundation_area).sum().round(1)
 df_sum_volume_foundation = round(pd.concat(df_to_sum_found).sum(), 1)
-# df_summed_without_foundation = pd.DataFrame({"Summed volume": [df_sum]})
-# col_1_sum = df['Area'].sum()
-# col_2_sum = df['Volume'].sum()
+
 
 total_row = pd.Series({"Area": df_sum_area, "Volume": df_sum_volume, "Count": ""},
                       name="Total without foundation/סך הכל ללא בסיס")
 total_row_found = pd.Series({"Area": "", "Volume": df_sum_volume_foundation, "Count": ""},
                             name="Total foundation/בסיס כולל")
+total_row = total_row.apply(pd.to_numeric, errors='ignore')
+total_row_found = total_row_found.apply(pd.to_numeric, errors='ignore')
+
+# df['Area'] = pd.to_numeric(df['Area'], errors='coerce')
+# df['Volume'] = pd.to_numeric(df['Volume'], errors='coerce')
 
 df = df._append(total_row_found)
 df = df._append(total_row)
+df["V/A עובי ממוצע"] = (df["Volume"] / df["Area"]).round(2)
+
 
 df = df.fillna('')
+
+
 # changing position of columns
-df = df.reindex(columns=["Area", "Volume", "Count", "Length"])
-df = df.rename(columns={"Area" : "Area/אזור", "Volume" : "Volume/כרך", "Count":"לספור/Count","Length":"Length/אורך"})
+df = df.reindex(columns=["Area", "Volume", "Count", "Length", "V/A עובי ממוצע","יחס למר בנוי"])
+df = df.rename(columns={"Area": "Area/שטח", "Volume": "Volume/נפח", "Count": "יחידות/Count", "Length": "Length/אורך"})
 
 writer = pd.ExcelWriter(IN[1], engine='openpyxl')
-df.to_excel(writer, sheet_name="Test", index=True)
+df.to_excel(writer, sheet_name="שלד בניין (Concrete Build)", index=True)
 
 workbook = writer.book
-worksheet = writer.sheets['Test']
+worksheet = writer.sheets['שלד בניין (Concrete Build)']
 column_index = 1  # column A`
 
+#top row colorized
 for col_num, column_title in enumerate(df.columns, 1):
     cell = worksheet.cell(row=1, column=col_num + 1)
-    cell.fill = PatternFill(start_color="808080", end_color="808080", fill_type="solid")
+    cell.fill = PatternFill(start_color="00CCCCFF", end_color="00CCCCFF", fill_type="solid")
 
 for row_index in range(1, df.shape[0] + 2):
     cell = worksheet.cell(row=row_index, column=column_index)
@@ -1089,13 +1069,44 @@ column_dimension.width = 25
 
 red_fill = PatternFill(start_color='00CCCCFF', end_color='00CCCCFF', fill_type='solid')
 _fill = PatternFill(start_color='00CCCCFF', end_color='00CCCCFF', fill_type='solid')
+default_fill = PatternFill(start_color='00FFFFCC', end_color='00FFFFCC', fill_type='solid')
+#colorizing cell by name
+# for row in worksheet.iter_rows():
+#     for cell in row:
+#         if cell.value in ['Foundations/יסודות', "Floors/קומות", 'Beams/קורות', 'Walls/קירות',
+#                           'Columns/עמודי בטון', 'Stairs/מדרגות', 'Precast elements/אלמנטים מראש']:
+#             cell.fill = red_fill
+#         elif cell.value in ["Total foundation/בסיס כולל", "Total without foundation/סך הכל ללא בסיס"]:
+#             cell.fill = _fill
+
+values_to_colorize = ['Foundations/יסודות', "Floors/קומות", 'Beams/קורות', 'Walls/קירות',
+                      'Columns/עמודי בטון', 'Stairs/מדרגות', 'Precast elements/אלמנטים מראש',"Total foundation/בסיס כולל","Total without foundation/סך הכל ללא בסיס"]
+
+# values_to_fill = ["Total foundation/בסיס כולל", "Total without foundation/סך הכל ללא בסיס"]
+
+# Create a separate PatternFill object for the row's fill color
+row_fill = red_fill
+bold_font = Font(bold=True)
+border_style = Side(border_style='thin')
+border = Border(left=border_style, right=border_style, top=border_style, bottom=border_style)
 
 for row in worksheet.iter_rows():
+    row_contains_colorize_value = False
     for cell in row:
-        if cell.value in ['Foundations/יסודות', "Floors/קומות", 'Beams/קורות', 'Walls/קירות',
-                            'Columns/עמודי בטון', 'Stairs/מדרגות','Precast elements/אלמנטים מראש']:
+        cell.font = bold_font
+        cell.border = border
+
+    for cell in row:
+        cell_value = str(cell.value)  # Convert cell value to a string
+        if cell_value in values_to_colorize:
+            row_contains_colorize_value = True
+            break
+
+    if row_contains_colorize_value:
+        for cell in row:
             cell.fill = red_fill
-        elif cell.value in ["Total foundation/בסיס כולל", "Total without foundation/סך הכל ללא בסיס"]:
-            cell.fill = _fill
+    else:
+        for cell in row:
+            cell.fill = default_fill
 
 writer._save()
